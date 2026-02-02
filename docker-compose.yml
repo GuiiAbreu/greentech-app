@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: greentech-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: greentech_db
+    volumes:
+      - greentech_pgdata:/var/lib/postgresql/data
+
+volumes:
+  greentech_pgdata:
