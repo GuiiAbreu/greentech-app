@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { env } from "./config/env.js";
+import { routes } from "./routes/index.js";
+import { errorMiddleware } from "./middlewares/error.middleware.js";
 
 export function createApp() {
   const app = express();
@@ -10,5 +12,9 @@ export function createApp() {
 
   app.get("/health", (_req, res) => res.json({ ok: true }));
 
+  app.use(routes);
+  app.use(errorMiddleware);
+
   return app;
 }
+

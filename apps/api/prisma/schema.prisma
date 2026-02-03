@@ -17,6 +17,21 @@ enum UserRole {
   CONSUMER
 }
 
+enum ProductCategory {
+  FRUTAS
+  HORTALICAS
+  LATICINIOS
+  OVOS
+  GRAOS
+}
+
+enum UnitType {
+  BANDEJA
+  KG
+  UNIDADE
+  MACO
+}
+
 model User {
   id           String   @id @default(uuid())
   role         UserRole
@@ -29,4 +44,56 @@ model User {
   city         String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  products     Product[]
+}
+
+model Product {
+  id          String          @id @default(uuid())
+  farmerId    String
+  farmer      User            @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String
+  category    ProductCategory
+  priceCents  Int
+  unit        UnitType
+  stockQty    Int
+  active      Boolean         @default(true)
+
+  photos      ProductPhoto[]
+  certs       Certification[]
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([farmerId])
+  @@index([category])
+  @@index([active])
+}
+
+model ProductPhoto {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+model Certification {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  title     String
+  issuer    String?
+  validUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([validUntil])
 }
