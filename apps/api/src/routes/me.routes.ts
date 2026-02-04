@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, AuthRequest } from "../middlewares/auth.middleware.js";
-import { hashPassword, comparePassword } from "../utils/password.js";
+import { comparePassword, hashPassword } from "../utils/password.js";
 
 export const meRoutes = Router();
 
@@ -14,9 +14,20 @@ meRoutes.get("/", async (req: AuthRequest, res) => {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
-      id: true, role: true, name: true, propertyName: true,
-      email: true, phone: true, address: true, city: true,
-      createdAt: true, updatedAt: true,
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      phone: true,
+      city: true,
+      farmerProfile: {
+        select: {
+          propertyName: true,
+          address: true,
+        },
+      },
+      createdAt: true,
+      updatedAt: true,
     },
   });
 
@@ -25,26 +36,60 @@ meRoutes.get("/", async (req: AuthRequest, res) => {
 
 const updateSchema = z.object({
   name: z.string().min(2).optional(),
-  propertyName: z.string().min(2).optional(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
+  phone: z.string().min(8).optional(),
   city: z.string().min(2).optional(),
+
+  // apenas FARMER
+  propertyName: z.string().min(2).optional(),
+  address: z.string().min(2).optional(),
 });
 
 meRoutes.put("/", async (req: AuthRequest, res) => {
   const userId = req.user!.id;
   const data = updateSchema.parse(req.body);
 
+  const isFarmer = req.user!.role === "FARMER";
+  const wantsFarmerProfileUpdate = Boolean(data.propertyName || data.address);
+
   const updated = await prisma.user.update({
     where: { id: userId },
     data: {
-      name: data.name,
-      propertyName: req.user!.role === "FARMER" ? (data.propertyName ?? undefined) : undefined,
+      name: data.name ?? undefined,
       phone: data.phone ?? undefined,
-      address: data.address ?? undefined,
       city: data.city ?? undefined,
+
+      farmerProfile:
+        isFarmer && wantsFarmerProfileUpdate
+          ? {
+              upsert: {
+                create: {
+                  // em teoria já existe, mas upsert garante consistência
+                  propertyName: data.propertyName ?? "Propriedade",
+                  address: data.address ?? "Endereço",
+                },
+                update: {
+                  propertyName: data.propertyName ?? undefined,
+                  address: data.address ?? undefined,
+                },
+              },
+            }
+          : undefined,
     },
-    select: { id: true, role: true, name: true, email: true, phone: true, address: true, city: true, propertyName: true },
+    select: {
+      id: true,
+      role: true,
+      name: true,
+      email: true,
+      phone: true,
+      city: true,
+      farmerProfile: {
+        select: {
+          propertyName: true,
+          address: true,
+        },
+      },
+      updatedAt: true,
+    },
   });
 
   return res.json(updated);

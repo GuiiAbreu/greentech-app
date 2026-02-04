@@ -36,16 +36,29 @@ model User {
   id           String   @id @default(uuid())
   role         UserRole
   name         String
-  propertyName String?
   email        String   @unique
   passwordHash String
-  phone        String?
-  address      String?
+
+  phone        String
   city         String
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  farmerProfile FarmerProfile? // só existe quando role = FARMER
+
   products     Product[]
+}
+
+model FarmerProfile {
+  userId       String  @id
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  propertyName String  // obrigatório p/ FARMER
+  address      String  // obrigatório p/ FARMER
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Product {
