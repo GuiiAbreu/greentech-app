@@ -63,6 +63,20 @@ const updateSchema = z.object({
   photoUrls: z.array(z.string().url()).max(6).optional(),
 });
 
+productsRoutes.get("/:id", async (req: AuthRequest, res) => {
+  const id = z.string().uuid().parse(req.params.id);
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { photos: true, certs: true },
+  });
+
+  if (!product) return res.status(404).json({ message: "Product not found" });
+  if (product.farmerId !== req.user!.id) return res.status(403).json({ message: "Forbidden" });
+
+  return res.json(product);
+});
+
 productsRoutes.put("/:id", async (req: AuthRequest, res) => {
   const id = z.string().uuid().parse(req.params.id);
   const data = updateSchema.parse(req.body);
