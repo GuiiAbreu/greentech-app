@@ -14,10 +14,16 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   const token = header.slice("Bearer ".length).trim();
 
   try {
-    const payload = verifyToken(token);
-    req.user = { id: payload.sub, role: payload.role };
-    next();
-  } catch {
-    return res.status(401).json({ message: "Invalid or expired token" });
+  const payload = verifyToken(token);
+
+  if (payload.role !== "FARMER" && payload.role !== "CONSUMER") {
+    return res.status(401).json({ message: "Invalid token role" });
   }
+
+  req.user = { id: payload.sub, role: payload.role };
+  next();
+} catch {
+  return res.status(401).json({ message: "Invalid or expired token" });
+}
+
 }

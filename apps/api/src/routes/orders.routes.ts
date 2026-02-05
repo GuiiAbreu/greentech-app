@@ -2,22 +2,43 @@ import { Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, AuthRequest } from "../middlewares/auth.middleware.js";
-import { requireRole } from "../middlewares/role.middleware.js";
 
 export const ordersRoutes = Router();
 
 ordersRoutes.use(authMiddleware);
 
+const deliveryMethodSchema = z.enum(["DELIVERY", "PICKUP"]);
+const orderStatusSchema = z.enum(["PENDING", "CONFIRMED", "DONE", "CANCELED"]);
+
+// Helpers
+function normalizeFarmer(farmer: {
+  id: string;
+  name: string;
+  phone: string;
+  city: string;
+  farmerProfile: { propertyName: string; address: string } | null;
+}) {
+  return {
+    id: farmer.id,
+    name: farmer.name,
+    phone: farmer.phone,
+    city: farmer.city,
+    propertyName: farmer.farmerProfile?.propertyName ?? null,
+    address: farmer.farmerProfile?.address ?? null,
+  };
+}
+
 /**
  * ==========================
- * CONSUMER
+ * CONSUMER - Criar pedido (1 farmer)
+ * POST /orders
  * ==========================
  */
+ordersRoutes.post("/", async (req: AuthRequest, res) => {
+  if (req.user!.role !== "CONSUMER") return res.status(403).json({ message: "Forbidden" });
 
-// Criar pedido (1 farmer apenas)
-ordersRoutes.post("/", requireRole("CONSUMER"), async (req: AuthRequest, res) => {
   const schema = z.object({
-    deliveryMethod: z.enum(["DELIVERY", "PICKUP"]),
+    deliveryMethod: deliveryMethodSchema,
     note: z.string().max(500).optional(),
     items: z
       .array(
@@ -31,7 +52,7 @@ ordersRoutes.post("/", requireRole("CONSUMER"), async (req: AuthRequest, res) =>
 
   const data = schema.parse(req.body);
 
-  // Buscar produtos e validar
+  // Buscar produtos ativos
   const productIds = [...new Set(data.items.map((i) => i.productId))];
 
   const products = await prisma.product.findMany({
@@ -51,12 +72,11 @@ ordersRoutes.post("/", requireRole("CONSUMER"), async (req: AuthRequest, res) =>
 
   // Regra: pedido só pode ser de 1 farmer
   const farmerId = products[0].farmerId;
-  const allSameFarmer = products.every((p) => p.farmerId === farmerId);
-  if (!allSameFarmer) {
+  if (!products.every((p) => p.farmerId === farmerId)) {
     return res.status(400).json({ message: "Order must contain products from only one farmer" });
   }
 
-  // Validar estoque (sem baixar estoque automaticamente — apenas valida)
+  // Validar estoque (sem dar baixa no estoque: apenas valida)
   const qtyById = new Map(data.items.map((i) => [i.productId, i.qty]));
   for (const p of products) {
     const qty = qtyById.get(p.id) ?? 0;
@@ -110,21 +130,28 @@ ordersRoutes.post("/", requireRole("CONSUMER"), async (req: AuthRequest, res) =>
     },
   });
 
-  return res.status(201).json(order);
+  return res.status(201).json({
+    ...order,
+    farmer: normalizeFarmer({ ...order.farmer, farmerProfile: order.farmer.farmerProfile ?? null }),
+  });
 });
 
-// Histórico do consumidor (pode filtrar por status=em_andamento/concluidos no mobile)
-ordersRoutes.get("/mine", requireRole("CONSUMER"), async (req: AuthRequest, res) => {
+/**
+ * ==========================
+ * CONSUMER - Histórico
+ * GET /orders/mine?status=PENDING|CONFIRMED|DONE|CANCELED
+ * ==========================
+ */
+ordersRoutes.get("/mine", async (req: AuthRequest, res) => {
+  if (req.user!.role !== "CONSUMER") return res.status(403).json({ message: "Forbidden" });
+
   const querySchema = z.object({
-    status: z.enum(["PENDING", "CONFIRMED", "DONE", "CANCELED"]).optional(),
+    status: orderStatusSchema.optional(),
   });
   const q = querySchema.parse(req.query);
 
   const orders = await prisma.order.findMany({
-    where: {
-      consumerId: req.user!.id,
-      status: q.status,
-    },
+    where: { consumerId: req.user!.id, status: q.status },
     orderBy: { createdAt: "desc" },
     include: {
       items: true,
@@ -134,28 +161,55 @@ ordersRoutes.get("/mine", requireRole("CONSUMER"), async (req: AuthRequest, res)
           name: true,
           phone: true,
           city: true,
-          farmerProfile: { select: { propertyName: true } },
+          farmerProfile: { select: { propertyName: true, address: true } },
         },
       },
     },
   });
 
-  const normalized = orders.map((o) => ({
-    ...o,
-    farmer: {
-      id: o.farmer.id,
-      name: o.farmer.name,
-      phone: o.farmer.phone,
-      city: o.farmer.city,
-      propertyName: o.farmer.farmerProfile?.propertyName ?? null,
-    },
-  }));
-
-  return res.json(normalized);
+  return res.json(
+    orders.map((o) => ({
+      ...o,
+      farmer: normalizeFarmer({ ...o.farmer, farmerProfile: o.farmer.farmerProfile ?? null }),
+    }))
+  );
 });
 
-// Detalhe do pedido (consumer)
-ordersRoutes.get("/:id", requireRole("CONSUMER"), async (req: AuthRequest, res) => {
+/**
+ * ==========================
+ * FARMER - Inbox (pedidos recebidos)
+ * GET /orders/inbox?status=PENDING|CONFIRMED|DONE|CANCELED
+ * ==========================
+ *
+ * IMPORTANTE: esta rota precisa vir ANTES de "/:id"
+ */
+ordersRoutes.get("/inbox", async (req: AuthRequest, res) => {
+  if (req.user!.role !== "FARMER") return res.status(403).json({ message: "Forbidden" });
+
+  const querySchema = z.object({
+    status: orderStatusSchema.optional(),
+  });
+  const q = querySchema.parse(req.query);
+
+  const orders = await prisma.order.findMany({
+    where: { farmerId: req.user!.id, status: q.status },
+    orderBy: { createdAt: "desc" },
+    include: {
+      items: true,
+      consumer: { select: { id: true, name: true, phone: true, city: true } },
+    },
+  });
+
+  return res.json(orders);
+});
+
+/**
+ * ==========================
+ * DETALHE DO PEDIDO (CONSUMER OU FARMER)
+ * GET /orders/:id
+ * ==========================
+ */
+ordersRoutes.get("/:id", async (req: AuthRequest, res) => {
   const id = z.string().uuid().parse(req.params.id);
 
   const order = await prisma.order.findUnique({
@@ -176,51 +230,27 @@ ordersRoutes.get("/:id", requireRole("CONSUMER"), async (req: AuthRequest, res) 
   });
 
   if (!order) return res.status(404).json({ message: "Order not found" });
-  if (order.consumerId !== req.user!.id) return res.status(403).json({ message: "Forbidden" });
+
+  // Permissão: só o consumer dono ou o farmer dono
+  const isOwner = order.consumerId === req.user!.id || order.farmerId === req.user!.id;
+  if (!isOwner) return res.status(403).json({ message: "Forbidden" });
 
   return res.json({
     ...order,
-    farmer: {
-      id: order.farmer.id,
-      name: order.farmer.name,
-      phone: order.farmer.phone,
-      city: order.farmer.city,
-      propertyName: order.farmer.farmerProfile?.propertyName ?? null,
-      address: order.farmer.farmerProfile?.address ?? null,
-    },
+    farmer: normalizeFarmer({ ...order.farmer, farmerProfile: order.farmer.farmerProfile ?? null }),
   });
 });
 
 /**
  * ==========================
- * FARMER
+ * FARMER - Atualizar status
+ * PATCH /orders/:id/status
+ * body: { status: "CONFIRMED" | "DONE" | "CANCELED" }
  * ==========================
  */
+ordersRoutes.patch("/:id/status", async (req: AuthRequest, res) => {
+  if (req.user!.role !== "FARMER") return res.status(403).json({ message: "Forbidden" });
 
-// Pedidos recebidos pelo agricultor
-ordersRoutes.get("/inbox/list", requireRole("FARMER"), async (req: AuthRequest, res) => {
-  const querySchema = z.object({
-    status: z.enum(["PENDING", "CONFIRMED", "DONE", "CANCELED"]).optional(),
-  });
-  const q = querySchema.parse(req.query);
-
-  const orders = await prisma.order.findMany({
-    where: {
-      farmerId: req.user!.id,
-      status: q.status,
-    },
-    orderBy: { createdAt: "desc" },
-    include: {
-      items: true,
-      consumer: { select: { id: true, name: true, phone: true, city: true } },
-    },
-  });
-
-  return res.json(orders);
-});
-
-// Atualizar status (accept/finish/cancel)
-ordersRoutes.patch("/:id/status", requireRole("FARMER"), async (req: AuthRequest, res) => {
   const paramsSchema = z.object({ id: z.string().uuid() });
   const bodySchema = z.object({
     status: z.enum(["CONFIRMED", "DONE", "CANCELED"]),
@@ -233,18 +263,20 @@ ordersRoutes.patch("/:id/status", requireRole("FARMER"), async (req: AuthRequest
   if (!existing) return res.status(404).json({ message: "Order not found" });
   if (existing.farmerId !== req.user!.id) return res.status(403).json({ message: "Forbidden" });
 
-  // Regras simples de transição (opcional, mas ajuda)
-  // PENDING -> CONFIRMED/DONE/CANCELED
-  // CONFIRMED -> DONE/CANCELED
-  // DONE/CANCELED -> (não muda)
+  // Regras simples de transição
+  // PENDING -> CONFIRMED | CANCELED
+  // CONFIRMED -> DONE | CANCELED
+  // DONE/CANCELED -> não muda
   const current = existing.status;
 
   if (current === "DONE" || current === "CANCELED") {
     return res.status(400).json({ message: `Order already ${current}` });
   }
   if (current === "PENDING" && status === "DONE") {
-    // pode permitir, mas geralmente não faz sentido. Mantive bloqueado.
     return res.status(400).json({ message: "Cannot set DONE before CONFIRMED" });
+  }
+  if (current === "CONFIRMED" && status === "CONFIRMED") {
+    return res.status(400).json({ message: "Order is already CONFIRMED" });
   }
 
   const updated = await prisma.order.update({
@@ -252,7 +284,6 @@ ordersRoutes.patch("/:id/status", requireRole("FARMER"), async (req: AuthRequest
     data: { status },
     include: {
       items: true,
-      consumer: { select: { id: true, name: true, phone: true, city: true } },
       farmer: {
         select: {
           id: true,
@@ -262,8 +293,12 @@ ordersRoutes.patch("/:id/status", requireRole("FARMER"), async (req: AuthRequest
           farmerProfile: { select: { propertyName: true, address: true } },
         },
       },
+      consumer: { select: { id: true, name: true, phone: true, city: true } },
     },
   });
 
-  return res.json(updated);
+  return res.json({
+    ...updated,
+    farmer: normalizeFarmer({ ...updated.farmer, farmerProfile: updated.farmer.farmerProfile ?? null }),
+  });
 });
