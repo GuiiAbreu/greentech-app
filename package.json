@@ -5,9 +5,13 @@
   "scripts": {
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
+
     "dev:api": "pnpm --filter @greentech/api dev",
+    "dev:web": "pnpm --filter @greentech/web dev",
     "dev:mobile": "pnpm --filter @greentech/mobile dev",
-    "dev": "concurrently -n API,MOBILE -c auto \"pnpm:dev:api\" \"pnpm:dev:mobile\""
+
+    "dev": "concurrently -n API,WEB -c auto \"pnpm:dev:api\" \"pnpm:dev:web\"",
+    "dev:all": "concurrently -n API,WEB,MOBILE -c auto \"pnpm:dev:api\" \"pnpm:dev:web\" \"pnpm:dev:mobile\""
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
