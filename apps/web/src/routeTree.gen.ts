@@ -9,37 +9,27 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as EducacaoRouteImport } from './routes/educacao'
-import { Route as CadastroRouteImport } from './routes/cadastro'
-import { Route as AlterarSenhaRouteImport } from './routes/alterar-senha'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ConsumidorPerfilRouteImport } from './routes/consumidor.perfil'
-import { Route as ConsumidorPedidosRouteImport } from './routes/consumidor.pedidos'
-import { Route as ConsumidorHomeRouteImport } from './routes/consumidor.home'
-import { Route as ConsumidorCheckoutRouteImport } from './routes/consumidor.checkout'
-import { Route as ConsumidorCarrinhoRouteImport } from './routes/consumidor.carrinho'
-import { Route as AgricultorPerfilRouteImport } from './routes/agricultor.perfil'
-import { Route as AgricultorPedidosRouteImport } from './routes/agricultor.pedidos'
+import { Route as AlterarSenhaRouteImport } from './routes/alterar-senha'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as EducacaoRouteImport } from './routes/educacao'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AgricultorDashboardRouteImport } from './routes/agricultor.dashboard'
+import { Route as AgricultorPedidosRouteImport } from './routes/agricultor.pedidos'
+import { Route as AgricultorPerfilRouteImport } from './routes/agricultor.perfil'
+import { Route as ConsumidorCarrinhoRouteImport } from './routes/consumidor.carrinho'
+import { Route as ConsumidorCheckoutRouteImport } from './routes/consumidor.checkout'
+import { Route as ConsumidorHomeRouteImport } from './routes/consumidor.home'
+import { Route as ConsumidorPedidosRouteImport } from './routes/consumidor.pedidos'
+import { Route as ConsumidorPerfilRouteImport } from './routes/consumidor.perfil'
 import { Route as AgricultorProdutosIndexRouteImport } from './routes/agricultor.produtos.index'
-import { Route as ConsumidorProdutosIdRouteImport } from './routes/consumidor.produtos.$id'
 import { Route as AgricultorProdutosNovoRouteImport } from './routes/agricultor.produtos.novo'
+import { Route as ConsumidorProdutosIdRouteImport } from './routes/consumidor.produtos.$id'
 import { Route as AgricultorProdutosIdEditarRouteImport } from './routes/agricultor.produtos.$id.editar'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EducacaoRoute = EducacaoRouteImport.update({
-  id: '/educacao',
-  path: '/educacao',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadastroRoute = CadastroRouteImport.update({
-  id: '/cadastro',
-  path: '/cadastro',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AlterarSenhaRoute = AlterarSenhaRouteImport.update({
@@ -47,44 +37,19 @@ const AlterarSenhaRoute = AlterarSenhaRouteImport.update({
   path: '/alterar-senha',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConsumidorPerfilRoute = ConsumidorPerfilRouteImport.update({
-  id: '/consumidor/perfil',
-  path: '/consumidor/perfil',
+const EducacaoRoute = EducacaoRouteImport.update({
+  id: '/educacao',
+  path: '/educacao',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConsumidorPedidosRoute = ConsumidorPedidosRouteImport.update({
-  id: '/consumidor/pedidos',
-  path: '/consumidor/pedidos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsumidorHomeRoute = ConsumidorHomeRouteImport.update({
-  id: '/consumidor/home',
-  path: '/consumidor/home',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsumidorCheckoutRoute = ConsumidorCheckoutRouteImport.update({
-  id: '/consumidor/checkout',
-  path: '/consumidor/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConsumidorCarrinhoRoute = ConsumidorCarrinhoRouteImport.update({
-  id: '/consumidor/carrinho',
-  path: '/consumidor/carrinho',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgricultorPerfilRoute = AgricultorPerfilRouteImport.update({
-  id: '/agricultor/perfil',
-  path: '/agricultor/perfil',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AgricultorPedidosRoute = AgricultorPedidosRouteImport.update({
-  id: '/agricultor/pedidos',
-  path: '/agricultor/pedidos',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgricultorDashboardRoute = AgricultorDashboardRouteImport.update({
@@ -92,19 +57,54 @@ const AgricultorDashboardRoute = AgricultorDashboardRouteImport.update({
   path: '/agricultor/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgricultorPedidosRoute = AgricultorPedidosRouteImport.update({
+  id: '/agricultor/pedidos',
+  path: '/agricultor/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgricultorPerfilRoute = AgricultorPerfilRouteImport.update({
+  id: '/agricultor/perfil',
+  path: '/agricultor/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorCarrinhoRoute = ConsumidorCarrinhoRouteImport.update({
+  id: '/consumidor/carrinho',
+  path: '/consumidor/carrinho',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorCheckoutRoute = ConsumidorCheckoutRouteImport.update({
+  id: '/consumidor/checkout',
+  path: '/consumidor/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorHomeRoute = ConsumidorHomeRouteImport.update({
+  id: '/consumidor/home',
+  path: '/consumidor/home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorPedidosRoute = ConsumidorPedidosRouteImport.update({
+  id: '/consumidor/pedidos',
+  path: '/consumidor/pedidos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorPerfilRoute = ConsumidorPerfilRouteImport.update({
+  id: '/consumidor/perfil',
+  path: '/consumidor/perfil',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgricultorProdutosIndexRoute = AgricultorProdutosIndexRouteImport.update({
   id: '/agricultor/produtos/',
   path: '/agricultor/produtos/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConsumidorProdutosIdRoute = ConsumidorProdutosIdRouteImport.update({
-  id: '/consumidor/produtos/$id',
-  path: '/consumidor/produtos/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AgricultorProdutosNovoRoute = AgricultorProdutosNovoRouteImport.update({
   id: '/agricultor/produtos/novo',
   path: '/agricultor/produtos/novo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorProdutosIdRoute = ConsumidorProdutosIdRouteImport.update({
+  id: '/consumidor/produtos/$id',
+  path: '/consumidor/produtos/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AgricultorProdutosIdEditarRoute =
@@ -254,25 +254,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/educacao': {
-      id: '/educacao'
-      path: '/educacao'
-      fullPath: '/educacao'
-      preLoaderRoute: typeof EducacaoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro': {
-      id: '/cadastro'
-      path: '/cadastro'
-      fullPath: '/cadastro'
-      preLoaderRoute: typeof CadastroRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/alterar-senha': {
@@ -282,60 +268,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AlterarSenhaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/consumidor/perfil': {
-      id: '/consumidor/perfil'
-      path: '/consumidor/perfil'
-      fullPath: '/consumidor/perfil'
-      preLoaderRoute: typeof ConsumidorPerfilRouteImport
+    '/educacao': {
+      id: '/educacao'
+      path: '/educacao'
+      fullPath: '/educacao'
+      preLoaderRoute: typeof EducacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/consumidor/pedidos': {
-      id: '/consumidor/pedidos'
-      path: '/consumidor/pedidos'
-      fullPath: '/consumidor/pedidos'
-      preLoaderRoute: typeof ConsumidorPedidosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/consumidor/home': {
-      id: '/consumidor/home'
-      path: '/consumidor/home'
-      fullPath: '/consumidor/home'
-      preLoaderRoute: typeof ConsumidorHomeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/consumidor/checkout': {
-      id: '/consumidor/checkout'
-      path: '/consumidor/checkout'
-      fullPath: '/consumidor/checkout'
-      preLoaderRoute: typeof ConsumidorCheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/consumidor/carrinho': {
-      id: '/consumidor/carrinho'
-      path: '/consumidor/carrinho'
-      fullPath: '/consumidor/carrinho'
-      preLoaderRoute: typeof ConsumidorCarrinhoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agricultor/perfil': {
-      id: '/agricultor/perfil'
-      path: '/agricultor/perfil'
-      fullPath: '/agricultor/perfil'
-      preLoaderRoute: typeof AgricultorPerfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/agricultor/pedidos': {
-      id: '/agricultor/pedidos'
-      path: '/agricultor/pedidos'
-      fullPath: '/agricultor/pedidos'
-      preLoaderRoute: typeof AgricultorPedidosRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agricultor/dashboard': {
@@ -345,6 +296,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgricultorDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agricultor/pedidos': {
+      id: '/agricultor/pedidos'
+      path: '/agricultor/pedidos'
+      fullPath: '/agricultor/pedidos'
+      preLoaderRoute: typeof AgricultorPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agricultor/perfil': {
+      id: '/agricultor/perfil'
+      path: '/agricultor/perfil'
+      fullPath: '/agricultor/perfil'
+      preLoaderRoute: typeof AgricultorPerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/carrinho': {
+      id: '/consumidor/carrinho'
+      path: '/consumidor/carrinho'
+      fullPath: '/consumidor/carrinho'
+      preLoaderRoute: typeof ConsumidorCarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/checkout': {
+      id: '/consumidor/checkout'
+      path: '/consumidor/checkout'
+      fullPath: '/consumidor/checkout'
+      preLoaderRoute: typeof ConsumidorCheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/home': {
+      id: '/consumidor/home'
+      path: '/consumidor/home'
+      fullPath: '/consumidor/home'
+      preLoaderRoute: typeof ConsumidorHomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/pedidos': {
+      id: '/consumidor/pedidos'
+      path: '/consumidor/pedidos'
+      fullPath: '/consumidor/pedidos'
+      preLoaderRoute: typeof ConsumidorPedidosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/perfil': {
+      id: '/consumidor/perfil'
+      path: '/consumidor/perfil'
+      fullPath: '/consumidor/perfil'
+      preLoaderRoute: typeof ConsumidorPerfilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agricultor/produtos/': {
       id: '/agricultor/produtos/'
       path: '/agricultor/produtos'
@@ -352,18 +352,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgricultorProdutosIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/consumidor/produtos/$id': {
-      id: '/consumidor/produtos/$id'
-      path: '/consumidor/produtos/$id'
-      fullPath: '/consumidor/produtos/$id'
-      preLoaderRoute: typeof ConsumidorProdutosIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/agricultor/produtos/novo': {
       id: '/agricultor/produtos/novo'
       path: '/agricultor/produtos/novo'
       fullPath: '/agricultor/produtos/novo'
       preLoaderRoute: typeof AgricultorProdutosNovoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/produtos/$id': {
+      id: '/consumidor/produtos/$id'
+      path: '/consumidor/produtos/$id'
+      fullPath: '/consumidor/produtos/$id'
+      preLoaderRoute: typeof ConsumidorProdutosIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/agricultor/produtos/$id/editar': {
@@ -398,3 +398,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

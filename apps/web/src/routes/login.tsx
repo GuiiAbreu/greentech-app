@@ -40,15 +40,29 @@ function LoginPage() {
         <Logo className="mb-6" />
         <Card className="w-full p-6">
           <h1 className="text-center text-2xl font-bold">Que bom te ver de novo!</h1>
-          <p className="mt-1 text-center text-sm text-muted-foreground">Entre na sua conta GreenTech</p>
+          <p className="mt-1 text-center text-sm text-muted-foreground">
+            Entre na sua conta GreenTech
+          </p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@email.com"
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••"
+              />
             </div>
             <Button type="submit" className="w-full" size="lg" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}
@@ -56,7 +70,9 @@ function LoginPage() {
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             Ainda não tem conta?{" "}
-            <Link to="/cadastro" className="font-semibold text-primary hover:underline">Criar conta</Link>
+            <Link to="/cadastro" className="font-semibold text-primary hover:underline">
+              Criar conta
+            </Link>
           </p>
         </Card>
       </div>
