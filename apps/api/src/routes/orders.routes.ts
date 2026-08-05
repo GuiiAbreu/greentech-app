@@ -252,6 +252,79 @@ ordersRoutes.get("/:id", async (req: AuthRequest, res) => {
 
 /**
  * ==========================
+ * CONSUMER - Cancelar pedido pendente
+ * PATCH /orders/:id/cancel
+ * ==========================
+ */
+ordersRoutes.patch("/:id/cancel", async (req: AuthRequest, res) => {
+  if (req.user!.role !== "CONSUMER") return res.status(403).json({ message: "Forbidden" });
+
+  const paramsSchema = z.object({ id: z.string().uuid() });
+  const { id } = paramsSchema.parse(req.params);
+
+  const existing = await prisma.order.findUnique({
+    where: { id },
+  });
+
+  if (!existing) return res.status(404).json({ message: "Order not found" });
+
+  if (existing.consumerId !== req.user!.id) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  if (existing.status !== "PENDING") {
+    return res.status(400).json({
+      message: "Only pending orders can be canceled by the consumer",
+    });
+  }
+
+  const result = await prisma.order.updateMany({
+    where: {
+      id,
+      consumerId: req.user!.id,
+      status: "PENDING",
+    },
+    data: {
+      status: "CANCELED",
+    },
+  });
+
+  if (result.count === 0) {
+    return res.status(400).json({
+      message: "Order cannot be canceled",
+    });
+  }
+
+  const updated = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      items: true,
+      farmer: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          city: true,
+          farmerProfile: { select: { propertyName: true, address: true } },
+        },
+      },
+      consumer: { select: { id: true, name: true, phone: true, city: true } },
+    },
+  });
+
+  if (!updated) return res.status(404).json({ message: "Order not found" });
+
+  return res.json({
+    ...updated,
+    farmer: normalizeFarmer({
+      ...updated.farmer,
+      farmerProfile: updated.farmer.farmerProfile ?? null,
+    }),
+  });
+});
+
+/**
+ * ==========================
  * FARMER - Atualizar status
  * PATCH /orders/:id/status
  * body: { status: "CONFIRMED" | "DONE" | "CANCELED" }
