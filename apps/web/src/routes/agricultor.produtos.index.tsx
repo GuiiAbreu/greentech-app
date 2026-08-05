@@ -10,12 +10,14 @@ import { api } from "@/services/api";
 import { LoadingState } from "@/components/LoadingState";
 import { EmptyState } from "@/components/EmptyState";
 import { formatBRL, unitLabel, categoryLabel } from "@/lib/format";
-import type { Product } from "@/lib/types";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { toast } from "sonner";
 import { normalizeProducts } from "@/lib/normalizers";
+import type { Product } from "@/lib/types";
+import { Plus, Pencil, Ban, Search } from "lucide-react";
+import { toast } from "sonner";
 
-export const Route = createFileRoute("/agricultor/produtos/")({ component: Page });
+export const Route = createFileRoute("/agricultor/produtos/")({
+  component: Page,
+});
 
 function Page() {
   return (
@@ -35,6 +37,7 @@ function List() {
 
   const load = () => {
     setLoading(true);
+
     api
       .get("/products/mine")
       .then((r) => {
@@ -43,6 +46,7 @@ function List() {
       })
       .finally(() => setLoading(false));
   };
+
   useEffect(load, []);
 
   const filtered = useMemo(
@@ -51,19 +55,23 @@ function List() {
         if (filter === "ACTIVE" && p.active === false) return false;
         if (filter === "INACTIVE" && p.active !== false) return false;
         if (q && !p.name.toLowerCase().includes(q.toLowerCase())) return false;
+
         return true;
       }),
     [products, q, filter],
   );
 
-  const onDelete = async (id: string) => {
-    if (!confirm("Remover este produto?")) return;
+  const onDeactivate = async (id: string) => {
+    if (!confirm("Desativar este produto? Ele deixará de aparecer no catálogo do consumidor.")) {
+      return;
+    }
+
     try {
       await api.delete(`/products/${id}`);
-      toast.success("Produto removido");
+      toast.success("Produto desativado");
       load();
     } catch {
-      toast.error("Falha ao remover");
+      toast.error("Falha ao desativar produto");
     }
   };
 
@@ -71,12 +79,15 @@ function List() {
     <div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Meus produtos</h1>
+
         <Link to="/agricultor/produtos/novo">
           <Button>
-            <Plus className="h-4 w-4" /> Novo produto
+            <Plus className="h-4 w-4" />
+            Novo produto
           </Button>
         </Link>
       </div>
+
       <Card className="mb-4 p-4">
         <div className="flex flex-wrap gap-3">
           <div className="relative min-w-60 flex-1">
@@ -88,6 +99,7 @@ function List() {
               className="pl-9"
             />
           </div>
+
           {(["ALL", "ACTIVE", "INACTIVE"] as const).map((f) => (
             <Button
               key={f}
@@ -100,6 +112,7 @@ function List() {
           ))}
         </div>
       </Card>
+
       {loading ? (
         <LoadingState />
       ) : filtered.length === 0 ? (
@@ -114,44 +127,61 @@ function List() {
         />
       ) : (
         <div className="grid gap-3">
-          {filtered.map((p) => (
-            <Card key={p.id} className="flex items-center gap-4 p-4">
-              <img
-                src={p.photoUrls?.[0] ?? `https://picsum.photos/seed/${p.id}/100/100`}
-                alt={p.name}
-                className="h-16 w-16 rounded-md object-cover"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium">{p.name}</p>
-                  <Badge variant="secondary">{categoryLabel[p.category]}</Badge>
-                  {p.active === false && (
-                    <Badge variant="outline" className="text-muted-foreground">
-                      Inativo
+          {filtered.map((p) => {
+            const isInactive = p.active === false;
+
+            return (
+              <Card key={p.id} className="flex items-center gap-4 p-4">
+                <img
+                  src={p.photoUrls?.[0] ?? `https://picsum.photos/seed/${p.id}/100/100`}
+                  alt={p.name}
+                  className="h-16 w-16 rounded-md object-cover"
+                />
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-medium">{p.name}</p>
+                    <Badge variant="secondary">{categoryLabel[p.category]}</Badge>
+
+                    {isInactive && (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        Inativo
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    {formatBRL(p.priceCents)} / {unitLabel[p.unit]} · {p.stockQty} em estoque
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Link to="/agricultor/produtos/$id/editar" params={{ id: p.id }}>
+                    <Button variant="outline" size="sm">
+                      <Pencil className="h-3 w-3" />
+                      Editar
+                    </Button>
+                  </Link>
+
+                  {isInactive ? (
+                    <Badge variant="outline" className="whitespace-nowrap text-muted-foreground">
+                      Produto desativado
                     </Badge>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() => onDeactivate(p.id)}
+                    >
+                      <Ban className="h-3 w-3" />
+                      Desativar
+                    </Button>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  {formatBRL(p.priceCents)} / {unitLabel[p.unit]} · {p.stockQty} em estoque
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Link to="/agricultor/produtos/$id/editar" params={{ id: p.id }}>
-                  <Button variant="outline" size="sm">
-                    <Pencil className="h-3 w-3" /> Editar
-                  </Button>
-                </Link>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive"
-                  onClick={() => onDelete(p.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
