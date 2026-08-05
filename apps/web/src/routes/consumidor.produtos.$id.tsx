@@ -26,6 +26,24 @@ function Page() {
   );
 }
 
+function todayDateOnly() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function certificationDateOnly(value?: string | null) {
+  if (!value) return null;
+
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function isCertificationExpired(value?: string | null) {
+  const certDate = certificationDateOnly(value);
+
+  if (!certDate) return false;
+
+  return certDate < todayDateOnly();
+}
+
 function Detail() {
   const { id } = useParams({ from: "/consumidor/produtos/$id" });
   const { add } = useCart();
@@ -105,18 +123,46 @@ function Detail() {
             <h3 className="flex items-center gap-2 font-semibold">
               <Award className="h-4 w-4 text-primary" /> Certificações
             </h3>
+
             <ul className="mt-2 space-y-2 text-sm">
-              {certs.map((c) => (
-                <li key={c.id} className="flex justify-between border-b pb-2 last:border-0">
-                  <div>
-                    <p className="font-medium">{c.title}</p>
-                    <p className="text-xs text-muted-foreground">{c.issuer}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    Válido até {formatDate(c.validUntil ?? undefined)}
-                  </span>
-                </li>
-              ))}
+              {certs.map((cert) => {
+                const expired = isCertificationExpired(cert.validUntil);
+
+                return (
+                  <li
+                    key={cert.id}
+                    className="flex flex-wrap items-start justify-between gap-3 border-b pb-2 last:border-0"
+                  >
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-medium">{cert.title}</p>
+
+                        {expired && (
+                          <Badge variant="outline" className="text-destructive">
+                            Expirada
+                          </Badge>
+                        )}
+                      </div>
+
+                      {cert.issuer && (
+                        <p className="text-xs text-muted-foreground">{cert.issuer}</p>
+                      )}
+                    </div>
+
+                    <div className="text-right text-xs text-muted-foreground">
+                      {cert.validUntil ? (
+                        expired ? (
+                          <span>Venceu em {formatDate(cert.validUntil)}</span>
+                        ) : (
+                          <span>Válida até {formatDate(cert.validUntil)}</span>
+                        )
+                      ) : (
+                        <span>Sem validade informada</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           </Card>
         )}
