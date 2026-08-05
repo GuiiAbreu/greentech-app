@@ -76,7 +76,8 @@ ordersRoutes.post("/", async (req: AuthRequest, res) => {
     return res.status(400).json({ message: "Order must contain products from only one farmer" });
   }
 
-  // Validar estoque (sem dar baixa no estoque: apenas valida)
+  // Validar estoque no momento da criação.
+  // A baixa definitiva será feita quando o agricultor confirmar o pedido.
   const qtyById = new Map(data.items.map((i) => [i.productId, i.qty]));
   for (const p of products) {
     const qty = qtyById.get(p.id) ?? 0;
@@ -259,46 +260,156 @@ ordersRoutes.patch("/:id/status", async (req: AuthRequest, res) => {
   const { id } = paramsSchema.parse(req.params);
   const { status } = bodySchema.parse(req.body);
 
-  const existing = await prisma.order.findUnique({ where: { id } });
+  const existing = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      items: true,
+    },
+  });
+
   if (!existing) return res.status(404).json({ message: "Order not found" });
   if (existing.farmerId !== req.user!.id) return res.status(403).json({ message: "Forbidden" });
 
-  // Regras simples de transição
-  // PENDING -> CONFIRMED | CANCELED
-  // CONFIRMED -> DONE | CANCELED
-  // DONE/CANCELED -> não muda
   const current = existing.status;
 
   if (current === "DONE" || current === "CANCELED") {
     return res.status(400).json({ message: `Order already ${current}` });
   }
+
   if (current === "PENDING" && status === "DONE") {
     return res.status(400).json({ message: "Cannot set DONE before CONFIRMED" });
   }
+
   if (current === "CONFIRMED" && status === "CONFIRMED") {
     return res.status(400).json({ message: "Order is already CONFIRMED" });
   }
 
-  const updated = await prisma.order.update({
-    where: { id },
-    data: { status },
-    include: {
-      items: true,
-      farmer: {
-        select: {
-          id: true,
-          name: true,
-          phone: true,
-          city: true,
-          farmerProfile: { select: { propertyName: true, address: true } },
-        },
+  let updated;
+
+  if (current === "PENDING" && status === "CONFIRMED") {
+    const productIds = existing.items.map((item) => item.productId);
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: productIds },
       },
-      consumer: { select: { id: true, name: true, phone: true, city: true } },
-    },
-  });
+      select: {
+        id: true,
+        name: true,
+        stockQty: true,
+        active: true,
+      },
+    });
+
+    for (const item of existing.items) {
+      const product = products.find((p) => p.id === item.productId);
+
+      if (!product || product.active === false) {
+        return res.status(400).json({
+          message: `Product unavailable: ${item.productName}`,
+          productId: item.productId,
+        });
+      }
+
+      if (product.stockQty < item.qty) {
+        return res.status(400).json({
+          message: `Insufficient stock for product: ${product.name}`,
+          productId: product.id,
+          available: product.stockQty,
+          requested: item.qty,
+        });
+      }
+    }
+
+    updated = await prisma.$transaction(async (tx) => {
+      for (const item of existing.items) {
+        const result = await tx.product.updateMany({
+          where: {
+            id: item.productId,
+            stockQty: { gte: item.qty },
+          },
+          data: {
+            stockQty: { decrement: item.qty },
+          },
+        });
+
+        if (result.count === 0) {
+          throw new Error("INSUFFICIENT_STOCK");
+        }
+      }
+
+      return tx.order.update({
+        where: { id },
+        data: { status },
+        include: {
+          items: true,
+          farmer: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              city: true,
+              farmerProfile: { select: { propertyName: true, address: true } },
+            },
+          },
+          consumer: { select: { id: true, name: true, phone: true, city: true } },
+        },
+      });
+    });
+  } else if (current === "CONFIRMED" && status === "CANCELED") {
+    updated = await prisma.$transaction(async (tx) => {
+      for (const item of existing.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stockQty: { increment: item.qty },
+          },
+        });
+      }
+
+      return tx.order.update({
+        where: { id },
+        data: { status },
+        include: {
+          items: true,
+          farmer: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+              city: true,
+              farmerProfile: { select: { propertyName: true, address: true } },
+            },
+          },
+          consumer: { select: { id: true, name: true, phone: true, city: true } },
+        },
+      });
+    });
+  } else {
+    updated = await prisma.order.update({
+      where: { id },
+      data: { status },
+      include: {
+        items: true,
+        farmer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            city: true,
+            farmerProfile: { select: { propertyName: true, address: true } },
+          },
+        },
+        consumer: { select: { id: true, name: true, phone: true, city: true } },
+      },
+    });
+  }
 
   return res.json({
     ...updated,
-    farmer: normalizeFarmer({ ...updated.farmer, farmerProfile: updated.farmer.farmerProfile ?? null }),
+    farmer: normalizeFarmer({
+      ...updated.farmer,
+      farmerProfile: updated.farmer.farmerProfile ?? null,
+    }),
   });
 });
