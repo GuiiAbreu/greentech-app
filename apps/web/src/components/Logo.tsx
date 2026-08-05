@@ -1,11 +1,8 @@
-import { Sprout } from "lucide-react";
-
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <div className={`flex items-center gap-2 font-bold text-lg ${className}`}>
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-        <Sprout className="h-4 w-4" />
-      </span>
+    <div className={`flex items-center gap-2 text-lg font-bold ${className}`}>
+      <img src="/images/favicon.png" alt="GreenTech" className="h-9 w-9 object-contain" />
+
       <span className="text-foreground">
         Green<span className="text-primary">Tech</span>
       </span>

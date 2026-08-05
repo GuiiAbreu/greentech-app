@@ -75,19 +75,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "GreenTech — Conectando o campo à sua mesa" },
+      {
+        name: "description",
+        content:
+          "GreenTech Generated Project - Portal web para apoiar a gestão e comercialização de produtos da agricultura familiar.",
+      },
+      { name: "author", content: "Green Tech" },
+      { property: "og:title", content: "GreenTech App" },
+      {
+        property: "og:description",
+        content:
+          "GreenTech Generated Project - Conectando agricultores familiares e consumidores por meio da tecnologia",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@GreenTech" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "icon",
+        type: "image/png",
+        href: "/images/favicon.png?v=3",
       },
     ],
   }),
@@ -99,7 +112,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>

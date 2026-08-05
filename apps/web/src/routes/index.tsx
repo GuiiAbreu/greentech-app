@@ -26,22 +26,40 @@ const benefits = [
 ];
 
 const featured = [
-  { name: "Tomate Cereja Orgânico", price: "R$ 12,00", img: "tomate" },
-  { name: "Alface Crespa", price: "R$ 4,50", img: "alface" },
-  { name: "Ovos Caipira", price: "R$ 18,00", img: "ovos" },
-  { name: "Queijo Coalho", price: "R$ 25,00", img: "queijo" },
+  {
+    name: "Tomate Cereja Orgânico",
+    price: "R$ 12,00",
+    img: "/images/produto-tomate.jpg",
+  },
+  {
+    name: "Alface Crespa",
+    price: "R$ 4,50",
+    img: "/images/produto-alface.jpg",
+  },
+  {
+    name: "Ovos Caipira",
+    price: "R$ 18,00",
+    img: "/images/produto-ovos.jpg",
+  },
+  {
+    name: "Queijo Coalho",
+    price: "R$ 25,00",
+    img: "/images/produto-queijo.jpg",
+  },
 ];
 
 function Index() {
   return (
     <LayoutPublic>
       <section className="bg-gradient-to-b from-primary/10 to-background">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:grid-cols-2 md:items-center md:py-24">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 pt-10 pb-16 md:grid-cols-2 md:items-center md:pt-12 md:pb-18">
           <div>
             <h1 className="text-4xl font-bold leading-tight text-foreground md:text-5xl">
-              Conectando o campo à <span className="text-primary">sua mesa</span>
+              Conectando o campo à
+              <br />
+              <span className="text-primary">sua mesa.</span>
             </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-2 text-lg text-muted-foreground">
               Compre produtos locais diretamente de agricultores familiares.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
@@ -61,11 +79,7 @@ function Index() {
             {featured.slice(0, 4).map((f) => (
               <Card key={f.img} className="overflow-hidden p-0">
                 <div className="aspect-square bg-muted">
-                  <img
-                    src={`https://picsum.photos/seed/${f.img}/400/400`}
-                    alt={f.name}
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={f.img} alt={f.name} className="h-full w-full object-cover" />
                 </div>
               </Card>
             ))}
@@ -73,10 +87,10 @@ function Index() {
         </div>
       </section>
 
-      <section id="sobre" className="py-16">
-        <div className="mx-auto max-w-7xl px-4">
+      <section id="sobre" className="scroll-mt-20 py-16">
+        <div className="mx-auto max-w-7xl px-8">
           <h2 className="text-center text-2xl font-bold md:text-3xl">Por que a GreenTech?</h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {benefits.map((b) => (
               <Card key={b.title} className="p-6 text-center">
                 <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
@@ -90,19 +104,15 @@ function Index() {
         </div>
       </section>
 
-      <section id="produtos" className="bg-muted/30 py-16">
-        <div className="mx-auto max-w-7xl px-4">
+      <section id="produtos" className="scroll-mt-20 bg-muted/30 py-16">
+        <div className="mx-auto max-w-7xl px-8">
           <h2 className="text-2xl font-bold md:text-3xl">Produtos em destaque</h2>
           <p className="mt-1 text-muted-foreground">Direto do produtor para você.</p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {featured.map((f) => (
               <Card key={f.name} className="overflow-hidden p-0">
                 <div className="aspect-square bg-muted">
-                  <img
-                    src={`https://picsum.photos/seed/${f.img}/400/400`}
-                    alt={f.name}
-                    className="h-full w-full object-cover"
-                  />
+                  <img src={f.img} alt={f.name} className="h-full w-full object-cover" />
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold">{f.name}</h3>
@@ -111,7 +121,7 @@ function Index() {
               </Card>
             ))}
           </div>
-          <div className="mt-8 text-center">
+          <div className="mt-12 text-center">
             <Link to="/cadastro">
               <Button size="lg">Criar conta para comprar</Button>
             </Link>
