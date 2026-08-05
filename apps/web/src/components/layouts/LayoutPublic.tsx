@@ -15,11 +15,11 @@ export function LayoutPublic({ children }: { children: ReactNode }) {
             <Link to="/" className="text-muted-foreground hover:text-foreground">
               Início
             </Link>
-            <a href="#produtos" className="text-muted-foreground hover:text-foreground">
-              Produtos
-            </a>
             <a href="#sobre" className="text-muted-foreground hover:text-foreground">
               Sobre
+            </a>
+            <a href="#produtos" className="text-muted-foreground hover:text-foreground">
+              Produtos
             </a>
           </nav>
           <div className="flex items-center gap-2">
