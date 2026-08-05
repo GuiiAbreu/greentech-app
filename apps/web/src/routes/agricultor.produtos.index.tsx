@@ -12,7 +12,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { formatBRL, unitLabel, categoryLabel } from "@/lib/format";
 import { normalizeProducts } from "@/lib/normalizers";
 import type { Product } from "@/lib/types";
-import { Plus, Pencil, Ban, Search } from "lucide-react";
+import { Plus, Pencil, Ban, Search, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/agricultor/produtos/")({
@@ -34,6 +34,8 @@ function List() {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [productToDeactivate, setProductToDeactivate] = useState<Product | null>(null);
+  const [deactivating, setDeactivating] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -61,17 +63,20 @@ function List() {
     [products, q, filter],
   );
 
-  const onDeactivate = async (id: string) => {
-    if (!confirm("Desativar este produto? Ele deixará de aparecer no catálogo do consumidor.")) {
-      return;
-    }
+  const onDeactivate = async () => {
+    if (!productToDeactivate) return;
+
+    setDeactivating(true);
 
     try {
-      await api.delete(`/products/${id}`);
+      await api.delete(`/products/${productToDeactivate.id}`);
       toast.success("Produto desativado");
+      setProductToDeactivate(null);
       load();
     } catch {
       toast.error("Falha ao desativar produto");
+    } finally {
+      setDeactivating(false);
     }
   };
 
@@ -172,7 +177,7 @@ function List() {
                       variant="ghost"
                       size="sm"
                       className="text-destructive"
-                      onClick={() => onDeactivate(p.id)}
+                      onClick={() => setProductToDeactivate(p)}
                     >
                       <Ban className="h-3 w-3" />
                       Desativar
@@ -182,6 +187,47 @@ function List() {
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {productToDeactivate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/20 px-4 backdrop-blur-sm">
+          <Card className="w-full max-w-md border-border bg-card p-6 shadow-xl">
+            <div className="flex gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-destructive/10 text-destructive">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-semibold">Desativar produto?</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  O produto{" "}
+                  <span className="font-medium text-foreground">{productToDeactivate.name}</span>{" "}
+                  deixará de aparecer no catálogo do consumidor, mas continuará salvo no sistema.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setProductToDeactivate(null)}
+                disabled={deactivating}
+              >
+                Manter ativo
+              </Button>
+
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={onDeactivate}
+                disabled={deactivating}
+              >
+                {deactivating ? "Desativando..." : "Desativar produto"}
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
     </div>
