@@ -46,10 +46,14 @@ function Index() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link to="/cadastro">
-                <Button size="lg"><ShoppingBasket className="h-4 w-4" /> Comprar produtos</Button>
+                <Button size="lg">
+                  <ShoppingBasket className="h-4 w-4" /> Comprar produtos
+                </Button>
               </Link>
               <Link to="/cadastro">
-                <Button size="lg" variant="outline"><Tractor className="h-4 w-4" /> Sou agricultor</Button>
+                <Button size="lg" variant="outline">
+                  <Tractor className="h-4 w-4" /> Sou agricultor
+                </Button>
               </Link>
             </div>
           </div>
@@ -108,7 +112,9 @@ function Index() {
             ))}
           </div>
           <div className="mt-8 text-center">
-            <Link to="/cadastro"><Button size="lg">Criar conta para comprar</Button></Link>
+            <Link to="/cadastro">
+              <Button size="lg">Criar conta para comprar</Button>
+            </Link>
           </div>
         </div>
       </section>

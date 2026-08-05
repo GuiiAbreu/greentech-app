@@ -22,8 +22,12 @@ import { Route as ConsumidorCheckoutRouteImport } from './routes/consumidor.chec
 import { Route as ConsumidorHomeRouteImport } from './routes/consumidor.home'
 import { Route as ConsumidorPedidosRouteImport } from './routes/consumidor.pedidos'
 import { Route as ConsumidorPerfilRouteImport } from './routes/consumidor.perfil'
+import { Route as AgricultorPedidosIndexRouteImport } from './routes/agricultor.pedidos.index'
+import { Route as AgricultorPedidosIdRouteImport } from './routes/agricultor.pedidos.$id'
 import { Route as AgricultorProdutosIndexRouteImport } from './routes/agricultor.produtos.index'
 import { Route as AgricultorProdutosNovoRouteImport } from './routes/agricultor.produtos.novo'
+import { Route as ConsumidorPedidosIndexRouteImport } from './routes/consumidor.pedidos.index'
+import { Route as ConsumidorPedidosIdRouteImport } from './routes/consumidor.pedidos.$id'
 import { Route as ConsumidorProdutosIdRouteImport } from './routes/consumidor.produtos.$id'
 import { Route as AgricultorProdutosIdEditarRouteImport } from './routes/agricultor.produtos.$id.editar'
 
@@ -92,6 +96,16 @@ const ConsumidorPerfilRoute = ConsumidorPerfilRouteImport.update({
   path: '/consumidor/perfil',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgricultorPedidosIndexRoute = AgricultorPedidosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AgricultorPedidosRoute,
+} as any)
+const AgricultorPedidosIdRoute = AgricultorPedidosIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AgricultorPedidosRoute,
+} as any)
 const AgricultorProdutosIndexRoute = AgricultorProdutosIndexRouteImport.update({
   id: '/agricultor/produtos/',
   path: '/agricultor/produtos/',
@@ -101,6 +115,16 @@ const AgricultorProdutosNovoRoute = AgricultorProdutosNovoRouteImport.update({
   id: '/agricultor/produtos/novo',
   path: '/agricultor/produtos/novo',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ConsumidorPedidosIndexRoute = ConsumidorPedidosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ConsumidorPedidosRoute,
+} as any)
+const ConsumidorPedidosIdRoute = ConsumidorPedidosIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ConsumidorPedidosRoute,
 } as any)
 const ConsumidorProdutosIdRoute = ConsumidorProdutosIdRouteImport.update({
   id: '/consumidor/produtos/$id',
@@ -121,16 +145,20 @@ export interface FileRoutesByFullPath {
   '/educacao': typeof EducacaoRoute
   '/login': typeof LoginRoute
   '/agricultor/dashboard': typeof AgricultorDashboardRoute
-  '/agricultor/pedidos': typeof AgricultorPedidosRoute
+  '/agricultor/pedidos': typeof AgricultorPedidosRouteWithChildren
   '/agricultor/perfil': typeof AgricultorPerfilRoute
   '/consumidor/carrinho': typeof ConsumidorCarrinhoRoute
   '/consumidor/checkout': typeof ConsumidorCheckoutRoute
   '/consumidor/home': typeof ConsumidorHomeRoute
-  '/consumidor/pedidos': typeof ConsumidorPedidosRoute
+  '/consumidor/pedidos': typeof ConsumidorPedidosRouteWithChildren
   '/consumidor/perfil': typeof ConsumidorPerfilRoute
+  '/agricultor/pedidos/$id': typeof AgricultorPedidosIdRoute
   '/agricultor/produtos/novo': typeof AgricultorProdutosNovoRoute
+  '/consumidor/pedidos/$id': typeof ConsumidorPedidosIdRoute
   '/consumidor/produtos/$id': typeof ConsumidorProdutosIdRoute
+  '/agricultor/pedidos/': typeof AgricultorPedidosIndexRoute
   '/agricultor/produtos/': typeof AgricultorProdutosIndexRoute
+  '/consumidor/pedidos/': typeof ConsumidorPedidosIndexRoute
   '/agricultor/produtos/$id/editar': typeof AgricultorProdutosIdEditarRoute
 }
 export interface FileRoutesByTo {
@@ -140,16 +168,18 @@ export interface FileRoutesByTo {
   '/educacao': typeof EducacaoRoute
   '/login': typeof LoginRoute
   '/agricultor/dashboard': typeof AgricultorDashboardRoute
-  '/agricultor/pedidos': typeof AgricultorPedidosRoute
   '/agricultor/perfil': typeof AgricultorPerfilRoute
   '/consumidor/carrinho': typeof ConsumidorCarrinhoRoute
   '/consumidor/checkout': typeof ConsumidorCheckoutRoute
   '/consumidor/home': typeof ConsumidorHomeRoute
-  '/consumidor/pedidos': typeof ConsumidorPedidosRoute
   '/consumidor/perfil': typeof ConsumidorPerfilRoute
+  '/agricultor/pedidos/$id': typeof AgricultorPedidosIdRoute
   '/agricultor/produtos/novo': typeof AgricultorProdutosNovoRoute
+  '/consumidor/pedidos/$id': typeof ConsumidorPedidosIdRoute
   '/consumidor/produtos/$id': typeof ConsumidorProdutosIdRoute
+  '/agricultor/pedidos': typeof AgricultorPedidosIndexRoute
   '/agricultor/produtos': typeof AgricultorProdutosIndexRoute
+  '/consumidor/pedidos': typeof ConsumidorPedidosIndexRoute
   '/agricultor/produtos/$id/editar': typeof AgricultorProdutosIdEditarRoute
 }
 export interface FileRoutesById {
@@ -160,16 +190,20 @@ export interface FileRoutesById {
   '/educacao': typeof EducacaoRoute
   '/login': typeof LoginRoute
   '/agricultor/dashboard': typeof AgricultorDashboardRoute
-  '/agricultor/pedidos': typeof AgricultorPedidosRoute
+  '/agricultor/pedidos': typeof AgricultorPedidosRouteWithChildren
   '/agricultor/perfil': typeof AgricultorPerfilRoute
   '/consumidor/carrinho': typeof ConsumidorCarrinhoRoute
   '/consumidor/checkout': typeof ConsumidorCheckoutRoute
   '/consumidor/home': typeof ConsumidorHomeRoute
-  '/consumidor/pedidos': typeof ConsumidorPedidosRoute
+  '/consumidor/pedidos': typeof ConsumidorPedidosRouteWithChildren
   '/consumidor/perfil': typeof ConsumidorPerfilRoute
+  '/agricultor/pedidos/$id': typeof AgricultorPedidosIdRoute
   '/agricultor/produtos/novo': typeof AgricultorProdutosNovoRoute
+  '/consumidor/pedidos/$id': typeof ConsumidorPedidosIdRoute
   '/consumidor/produtos/$id': typeof ConsumidorProdutosIdRoute
+  '/agricultor/pedidos/': typeof AgricultorPedidosIndexRoute
   '/agricultor/produtos/': typeof AgricultorProdutosIndexRoute
+  '/consumidor/pedidos/': typeof ConsumidorPedidosIndexRoute
   '/agricultor/produtos/$id/editar': typeof AgricultorProdutosIdEditarRoute
 }
 export interface FileRouteTypes {
@@ -188,9 +222,13 @@ export interface FileRouteTypes {
     | '/consumidor/home'
     | '/consumidor/pedidos'
     | '/consumidor/perfil'
+    | '/agricultor/pedidos/$id'
     | '/agricultor/produtos/novo'
+    | '/consumidor/pedidos/$id'
     | '/consumidor/produtos/$id'
+    | '/agricultor/pedidos/'
     | '/agricultor/produtos/'
+    | '/consumidor/pedidos/'
     | '/agricultor/produtos/$id/editar'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -200,16 +238,18 @@ export interface FileRouteTypes {
     | '/educacao'
     | '/login'
     | '/agricultor/dashboard'
-    | '/agricultor/pedidos'
     | '/agricultor/perfil'
     | '/consumidor/carrinho'
     | '/consumidor/checkout'
     | '/consumidor/home'
-    | '/consumidor/pedidos'
     | '/consumidor/perfil'
+    | '/agricultor/pedidos/$id'
     | '/agricultor/produtos/novo'
+    | '/consumidor/pedidos/$id'
     | '/consumidor/produtos/$id'
+    | '/agricultor/pedidos'
     | '/agricultor/produtos'
+    | '/consumidor/pedidos'
     | '/agricultor/produtos/$id/editar'
   id:
     | '__root__'
@@ -226,9 +266,13 @@ export interface FileRouteTypes {
     | '/consumidor/home'
     | '/consumidor/pedidos'
     | '/consumidor/perfil'
+    | '/agricultor/pedidos/$id'
     | '/agricultor/produtos/novo'
+    | '/consumidor/pedidos/$id'
     | '/consumidor/produtos/$id'
+    | '/agricultor/pedidos/'
     | '/agricultor/produtos/'
+    | '/consumidor/pedidos/'
     | '/agricultor/produtos/$id/editar'
   fileRoutesById: FileRoutesById
 }
@@ -239,12 +283,12 @@ export interface RootRouteChildren {
   EducacaoRoute: typeof EducacaoRoute
   LoginRoute: typeof LoginRoute
   AgricultorDashboardRoute: typeof AgricultorDashboardRoute
-  AgricultorPedidosRoute: typeof AgricultorPedidosRoute
+  AgricultorPedidosRoute: typeof AgricultorPedidosRouteWithChildren
   AgricultorPerfilRoute: typeof AgricultorPerfilRoute
   ConsumidorCarrinhoRoute: typeof ConsumidorCarrinhoRoute
   ConsumidorCheckoutRoute: typeof ConsumidorCheckoutRoute
   ConsumidorHomeRoute: typeof ConsumidorHomeRoute
-  ConsumidorPedidosRoute: typeof ConsumidorPedidosRoute
+  ConsumidorPedidosRoute: typeof ConsumidorPedidosRouteWithChildren
   ConsumidorPerfilRoute: typeof ConsumidorPerfilRoute
   AgricultorProdutosNovoRoute: typeof AgricultorProdutosNovoRoute
   ConsumidorProdutosIdRoute: typeof ConsumidorProdutosIdRoute
@@ -345,6 +389,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ConsumidorPerfilRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agricultor/pedidos/': {
+      id: '/agricultor/pedidos/'
+      path: '/'
+      fullPath: '/agricultor/pedidos/'
+      preLoaderRoute: typeof AgricultorPedidosIndexRouteImport
+      parentRoute: typeof AgricultorPedidosRoute
+    }
+    '/agricultor/pedidos/$id': {
+      id: '/agricultor/pedidos/$id'
+      path: '/$id'
+      fullPath: '/agricultor/pedidos/$id'
+      preLoaderRoute: typeof AgricultorPedidosIdRouteImport
+      parentRoute: typeof AgricultorPedidosRoute
+    }
     '/agricultor/produtos/': {
       id: '/agricultor/produtos/'
       path: '/agricultor/produtos'
@@ -358,6 +416,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/agricultor/produtos/novo'
       preLoaderRoute: typeof AgricultorProdutosNovoRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/consumidor/pedidos/': {
+      id: '/consumidor/pedidos/'
+      path: '/'
+      fullPath: '/consumidor/pedidos/'
+      preLoaderRoute: typeof ConsumidorPedidosIndexRouteImport
+      parentRoute: typeof ConsumidorPedidosRoute
+    }
+    '/consumidor/pedidos/$id': {
+      id: '/consumidor/pedidos/$id'
+      path: '/$id'
+      fullPath: '/consumidor/pedidos/$id'
+      preLoaderRoute: typeof ConsumidorPedidosIdRouteImport
+      parentRoute: typeof ConsumidorPedidosRoute
     }
     '/consumidor/produtos/$id': {
       id: '/consumidor/produtos/$id'
@@ -376,6 +448,32 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AgricultorPedidosRouteChildren {
+  AgricultorPedidosIdRoute: typeof AgricultorPedidosIdRoute
+  AgricultorPedidosIndexRoute: typeof AgricultorPedidosIndexRoute
+}
+
+const AgricultorPedidosRouteChildren: AgricultorPedidosRouteChildren = {
+  AgricultorPedidosIdRoute: AgricultorPedidosIdRoute,
+  AgricultorPedidosIndexRoute: AgricultorPedidosIndexRoute,
+}
+
+const AgricultorPedidosRouteWithChildren =
+  AgricultorPedidosRoute._addFileChildren(AgricultorPedidosRouteChildren)
+
+interface ConsumidorPedidosRouteChildren {
+  ConsumidorPedidosIdRoute: typeof ConsumidorPedidosIdRoute
+  ConsumidorPedidosIndexRoute: typeof ConsumidorPedidosIndexRoute
+}
+
+const ConsumidorPedidosRouteChildren: ConsumidorPedidosRouteChildren = {
+  ConsumidorPedidosIdRoute: ConsumidorPedidosIdRoute,
+  ConsumidorPedidosIndexRoute: ConsumidorPedidosIndexRoute,
+}
+
+const ConsumidorPedidosRouteWithChildren =
+  ConsumidorPedidosRoute._addFileChildren(ConsumidorPedidosRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlterarSenhaRoute: AlterarSenhaRoute,
@@ -383,12 +481,12 @@ const rootRouteChildren: RootRouteChildren = {
   EducacaoRoute: EducacaoRoute,
   LoginRoute: LoginRoute,
   AgricultorDashboardRoute: AgricultorDashboardRoute,
-  AgricultorPedidosRoute: AgricultorPedidosRoute,
+  AgricultorPedidosRoute: AgricultorPedidosRouteWithChildren,
   AgricultorPerfilRoute: AgricultorPerfilRoute,
   ConsumidorCarrinhoRoute: ConsumidorCarrinhoRoute,
   ConsumidorCheckoutRoute: ConsumidorCheckoutRoute,
   ConsumidorHomeRoute: ConsumidorHomeRoute,
-  ConsumidorPedidosRoute: ConsumidorPedidosRoute,
+  ConsumidorPedidosRoute: ConsumidorPedidosRouteWithChildren,
   ConsumidorPerfilRoute: ConsumidorPerfilRoute,
   AgricultorProdutosNovoRoute: AgricultorProdutosNovoRoute,
   ConsumidorProdutosIdRoute: ConsumidorProdutosIdRoute,
