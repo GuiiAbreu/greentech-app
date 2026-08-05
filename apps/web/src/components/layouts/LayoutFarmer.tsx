@@ -51,7 +51,10 @@ export function LayoutFarmer({ children }: { children: ReactNode }) {
         );
       })}
       <button
-        onClick={() => { logout(); navigate({ to: "/login" }); }}
+        onClick={() => {
+          logout();
+          navigate({ to: "/login" });
+        }}
         className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent/50"
       >
         <LogOut className="h-4 w-4" /> Sair
@@ -74,9 +77,7 @@ export function LayoutFarmer({ children }: { children: ReactNode }) {
             <Menu className="h-5 w-5" />
           </Button>
         </header>
-        {open && (
-          <div className="border-b bg-sidebar text-sidebar-foreground md:hidden">{Nav}</div>
-        )}
+        {open && <div className="border-b bg-sidebar text-sidebar-foreground md:hidden">{Nav}</div>}
         <main className="flex-1 overflow-x-auto p-4 md:p-6">{children}</main>
       </div>
     </div>

@@ -38,19 +38,26 @@ ordersRoutes.post("/", async (req: AuthRequest, res) => {
   if (req.user!.role !== "CONSUMER") return res.status(403).json({ message: "Forbidden" });
 
   const schema = z.object({
-    deliveryMethod: deliveryMethodSchema,
-    note: z.string().max(500).optional(),
-    items: z
-      .array(
-        z.object({
-          productId: z.string().uuid(),
-          qty: z.number().int().min(1).max(999),
-        })
-      )
-      .min(1),
-  });
+  deliveryMethod: deliveryMethodSchema,
+  note: z.string().max(500).optional(),
+  deliveryAddress: z.string().max(255).optional(),
+  items: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        qty: z.number().int().min(1).max(999),
+      })
+    )
+    .min(1),
+});
 
   const data = schema.parse(req.body);
+
+  if (data.deliveryMethod === "DELIVERY" && !data.deliveryAddress?.trim()) {
+  return res.status(400).json({
+    message: "Delivery address is required for delivery orders",
+  });
+}
 
   // Buscar produtos ativos
   const productIds = [...new Set(data.items.map((i) => i.productId))];
@@ -112,6 +119,7 @@ ordersRoutes.post("/", async (req: AuthRequest, res) => {
       consumerId: req.user!.id,
       farmerId,
       deliveryMethod: data.deliveryMethod,
+      deliveryAddress: data.deliveryMethod === "DELIVERY" ? data.deliveryAddress!.trim() : null,
       note: data.note ?? null,
       subtotalCents,
       items: { create: orderItems },

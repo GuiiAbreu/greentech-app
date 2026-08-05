@@ -22,11 +22,19 @@ export function LayoutConsumer({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen flex-col bg-background">
       <header className="sticky top-0 z-30 border-b bg-card">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-          <Link to="/consumidor/home"><Logo /></Link>
+          <Link to="/consumidor/home">
+            <Logo />
+          </Link>
           <nav className="hidden items-center gap-6 text-sm md:flex">
-            <Link to="/consumidor/home" className="text-muted-foreground hover:text-foreground">Produtos</Link>
-            <Link to="/consumidor/pedidos" className="text-muted-foreground hover:text-foreground">Pedidos</Link>
-            <Link to="/educacao" className="text-muted-foreground hover:text-foreground">Educação</Link>
+            <Link to="/consumidor/home" className="text-muted-foreground hover:text-foreground">
+              Produtos
+            </Link>
+            <Link to="/consumidor/pedidos" className="text-muted-foreground hover:text-foreground">
+              Pedidos
+            </Link>
+            <Link to="/educacao" className="text-muted-foreground hover:text-foreground">
+              Educação
+            </Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link to="/consumidor/carrinho">
@@ -57,7 +65,12 @@ export function LayoutConsumer({ children }: { children: ReactNode }) {
                   <BookOpen className="h-4 w-4" /> Educação
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => { logout(); navigate({ to: "/login" }); }}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    logout();
+                    navigate({ to: "/login" });
+                  }}
+                >
                   <LogOut className="h-4 w-4" /> Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -85,6 +85,7 @@ export interface Order {
   id: string;
   status: OrderStatus;
   deliveryMethod: DeliveryMethod;
+  deliveryAddress?: string | null;
   note?: string | null;
   totalCents?: number;
   subtotalCents?: number;
