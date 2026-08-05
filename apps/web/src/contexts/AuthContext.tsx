@@ -1,6 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { api } from "@/services/api";
 import type { User } from "@/lib/types";
+import { normalizeUser } from "@/lib/normalizers";
 
 interface AuthCtx {
   user: User | null;
@@ -26,28 +28,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const u = localStorage.getItem("greentech_user");
     if (t) setToken(t);
     if (u) {
-      try { setUser(JSON.parse(u)); } catch { /* noop */ }
+      try {
+        setUser(normalizeUser(JSON.parse(u)));
+      } catch {
+        /* noop */
+      }
     }
     if (t) {
-      api.get("/me").then((r) => {
-        setUser(r.data);
-        localStorage.setItem("greentech_user", JSON.stringify(r.data));
-      }).catch(() => {
-        localStorage.removeItem("greentech_token");
-        localStorage.removeItem("greentech_user");
-        setToken(null);
-        setUser(null);
-      }).finally(() => setLoading(false));
+      api
+        .get("/me")
+        .then((r) => {
+          const normalized = normalizeUser(r.data);
+          setUser(normalized);
+          localStorage.setItem("greentech_user", JSON.stringify(normalized));
+        })
+        .catch(() => {
+          localStorage.removeItem("greentech_token");
+          localStorage.removeItem("greentech_user");
+          setToken(null);
+          setUser(null);
+        })
+        .finally(() => setLoading(false));
     } else {
       setLoading(false);
     }
   }, []);
 
   const persist = (t: string, u: User) => {
+    const normalized = normalizeUser(u);
+
     localStorage.setItem("greentech_token", t);
-    localStorage.setItem("greentech_user", JSON.stringify(u));
+    localStorage.setItem("greentech_user", JSON.stringify(normalized));
     setToken(t);
-    setUser(u);
+    setUser(normalized);
   };
 
   const login: AuthCtx["login"] = async (email, password) => {
@@ -86,8 +99,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refresh = async () => {
     const r = await api.get("/me");
-    setUser(r.data);
-    localStorage.setItem("greentech_user", JSON.stringify(r.data));
+    const normalized = normalizeUser(r.data);
+
+    setUser(normalized);
+    localStorage.setItem("greentech_user", JSON.stringify(normalized));
   };
 
   return (

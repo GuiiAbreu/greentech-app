@@ -10,13 +10,16 @@ import { EmptyState } from "@/components/EmptyState";
 import { StatusBadge } from "@/components/StatusBadge";
 import { formatBRL, formatDate } from "@/lib/format";
 import type { Order, OrderStatus } from "@/lib/types";
+import { normalizeOrders } from "@/lib/normalizers";
 
 export const Route = createFileRoute("/consumidor/pedidos")({ component: Page });
 
 function Page() {
   return (
     <ProtectedRoute role="CONSUMER">
-      <LayoutConsumer><Orders /></LayoutConsumer>
+      <LayoutConsumer>
+        <Orders />
+      </LayoutConsumer>
     </ProtectedRoute>
   );
 }
@@ -26,11 +29,16 @@ function useOrders(statuses: OrderStatus[]) {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     setLoading(true);
-    Promise.all(statuses.map((s) => api.get("/orders/mine", { params: { status: s } }).then((r) => r.data)))
-      .then((arr) => setOrders(arr.flatMap((x) => (Array.isArray(x) ? x : (x?.items ?? [])))))
+    Promise.all(
+      statuses.map((s) => api.get("/orders/mine", { params: { status: s } }).then((r) => r.data)),
+    )
+      .then((arr) => {
+        const data = arr.flatMap((x) => (Array.isArray(x) ? x : (x?.items ?? [])));
+        setOrders(normalizeOrders(data));
+      })
       .catch(() => setOrders([]))
       .finally(() => setLoading(false));
-  }, [statuses.join(",")]);
+  }, [statuses]);
   return { orders, loading };
 }
 
@@ -45,8 +53,12 @@ function OrderList({ statuses }: { statuses: OrderStatus[] }) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <p className="font-mono text-xs text-muted-foreground">#{o.id.slice(0, 8)}</p>
-              <p className="mt-1 font-semibold">{o.farmer?.propertyName ?? o.farmer?.name ?? "Agricultor"}</p>
-              <p className="text-xs text-muted-foreground">{formatDate(o.createdAt)} · {o.items?.length ?? 0} item(ns)</p>
+              <p className="mt-1 font-semibold">
+                {o.farmer?.propertyName ?? o.farmer?.name ?? "Agricultor"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDate(o.createdAt)} · {o.items?.length ?? 0} item(ns)
+              </p>
             </div>
             <div className="text-right">
               <StatusBadge status={o.status} />
@@ -68,8 +80,12 @@ function Orders() {
           <TabsTrigger value="active">Em andamento</TabsTrigger>
           <TabsTrigger value="done">Concluídos</TabsTrigger>
         </TabsList>
-        <TabsContent value="active" className="mt-4"><OrderList statuses={["PENDING", "CONFIRMED"]} /></TabsContent>
-        <TabsContent value="done" className="mt-4"><OrderList statuses={["DONE", "CANCELED"]} /></TabsContent>
+        <TabsContent value="active" className="mt-4">
+          <OrderList statuses={["PENDING", "CONFIRMED"]} />
+        </TabsContent>
+        <TabsContent value="done" className="mt-4">
+          <OrderList statuses={["DONE", "CANCELED"]} />
+        </TabsContent>
       </Tabs>
     </div>
   );

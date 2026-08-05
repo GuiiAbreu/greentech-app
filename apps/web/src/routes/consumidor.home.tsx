@@ -16,15 +16,25 @@ import { Search } from "lucide-react";
 import { categoryLabel, formatBRL } from "@/lib/format";
 import type { Product, ProductCategory } from "@/lib/types";
 import { Link } from "@tanstack/react-router";
+import { normalizeProducts } from "@/lib/normalizers";
 
 export const Route = createFileRoute("/consumidor/home")({ component: Page });
 
-const categories: (ProductCategory | "ALL")[] = ["ALL", "FRUTAS", "HORTALICAS", "LATICINIOS", "OVOS", "GRAOS"];
+const categories: (ProductCategory | "ALL")[] = [
+  "ALL",
+  "FRUTAS",
+  "HORTALICAS",
+  "LATICINIOS",
+  "OVOS",
+  "GRAOS",
+];
 
 function Page() {
   return (
     <ProtectedRoute role="CONSUMER">
-      <LayoutConsumer><Home /></LayoutConsumer>
+      <LayoutConsumer>
+        <Home />
+      </LayoutConsumer>
     </ProtectedRoute>
   );
 }
@@ -44,8 +54,12 @@ function Home() {
     if (q) params.q = q;
     if (city) params.city = city;
     if (cat !== "ALL") params.category = cat;
-    api.get("/catalog/products", { params })
-      .then((r) => setProducts(Array.isArray(r.data) ? r.data : (r.data.items ?? [])))
+    api
+      .get("/catalog/products", { params })
+      .then((r) => {
+        const data = Array.isArray(r.data) ? r.data : (r.data.items ?? []);
+        setProducts(normalizeProducts(data));
+      })
       .catch(() => setProducts([]))
       .finally(() => setLoading(false));
   }, [q, city, cat]);
@@ -67,23 +81,41 @@ function Home() {
           <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar produtos..." className="pl-9" />
+              <Input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Buscar produtos..."
+                className="pl-9"
+              />
             </div>
-            <Input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Filtrar por cidade" />
+            <Input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Filtrar por cidade"
+            />
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {categories.map((c) => (
-              <Button key={c} variant={cat === c ? "default" : "outline"} size="sm" onClick={() => setCat(c)}>
+              <Button
+                key={c}
+                variant={cat === c ? "default" : "outline"}
+                size="sm"
+                onClick={() => setCat(c)}
+              >
                 {c === "ALL" ? "Todos" : categoryLabel[c]}
               </Button>
             ))}
           </div>
         </Card>
-        {loading ? <LoadingState /> : products.length === 0 ? (
+        {loading ? (
+          <LoadingState />
+        ) : products.length === 0 ? (
           <EmptyState title="Nenhum produto encontrado" description="Tente ajustar os filtros." />
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((p) => <ProductCard key={p.id} product={p} onAdd={onAdd} />)}
+            {products.map((p) => (
+              <ProductCard key={p.id} product={p} onAdd={onAdd} />
+            ))}
           </div>
         )}
       </div>
@@ -98,15 +130,20 @@ function Home() {
               <ul className="mt-3 space-y-2 text-sm">
                 {items.slice(0, 4).map((i) => (
                   <li key={i.productId} className="flex justify-between gap-2">
-                    <span className="line-clamp-1">{i.product.name} × {i.qty}</span>
+                    <span className="line-clamp-1">
+                      {i.product.name} × {i.qty}
+                    </span>
                     <span className="font-medium">{formatBRL(i.product.priceCents * i.qty)}</span>
                   </li>
                 ))}
               </ul>
               <div className="mt-4 flex justify-between border-t pt-3 text-sm font-semibold">
-                <span>Total</span><span className="text-primary">{formatBRL(totalCents)}</span>
+                <span>Total</span>
+                <span className="text-primary">{formatBRL(totalCents)}</span>
               </div>
-              <Link to="/consumidor/carrinho"><Button className="mt-3 w-full">Ver carrinho</Button></Link>
+              <Link to="/consumidor/carrinho">
+                <Button className="mt-3 w-full">Ver carrinho</Button>
+              </Link>
             </>
           )}
         </Card>
