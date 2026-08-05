@@ -138,7 +138,7 @@ function List() {
             return (
               <Card key={p.id} className="flex items-center gap-4 p-4">
                 <img
-                  src={p.photoUrls?.[0] ?? `https://picsum.photos/seed/${p.id}/100/100`}
+                  src={p.photoUrls?.[0] ?? "/images/produto-placeholder.jpg"}
                   alt={p.name}
                   className="h-16 w-16 rounded-md object-cover"
                 />

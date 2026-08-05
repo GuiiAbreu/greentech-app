@@ -13,7 +13,7 @@ export function ProductCard({
   product: Product;
   onAdd?: (p: Product) => void;
 }) {
-  const img = product.photoUrls?.[0] ?? `https://picsum.photos/seed/${product.id}/600/600`;
+  const img = product.photoUrls?.[0] ?? "/images/produto-placeholder.jpg";
   return (
     <Card className="overflow-hidden p-0 transition-shadow hover:shadow-md">
       <Link

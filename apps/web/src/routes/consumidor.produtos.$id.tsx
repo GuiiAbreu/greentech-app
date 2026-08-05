@@ -88,7 +88,7 @@ function Detail() {
       <Card className="overflow-hidden p-0">
         <div className="aspect-square bg-muted">
           <img
-            src={p.photoUrls?.[0] ?? `https://picsum.photos/seed/${p.id}/800/800`}
+            src={p.photoUrls?.[0] ?? "/images/produto-placeholder.jpg"}
             alt={p.name}
             className="h-full w-full object-cover"
           />

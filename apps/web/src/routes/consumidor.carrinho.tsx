@@ -43,7 +43,7 @@ function Cart() {
         {items.map((i) => (
           <Card key={i.productId} className="flex items-center gap-4 p-4">
             <img
-              src={i.product.photoUrls?.[0] ?? `https://picsum.photos/seed/${i.productId}/100/100`}
+              src={i.product.photoUrls?.[0] ?? "/images/produto-placeholder.jpg"}
               alt={i.product.name}
               className="h-16 w-16 rounded-md object-cover"
             />
