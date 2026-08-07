@@ -183,6 +183,10 @@ Verifica os tipos da API.
 pnpm --filter @greentech/web build
 ```
 Gera o build do portal web.
+
+## Protótipo interativo utilizado como prévia
+Para acessar a versão completa do protótipo e interações, o leitor pode acessar: 
+https://agri-market-web.lovable.app/.
   
 ## Status do projeto
 
