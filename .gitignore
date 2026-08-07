@@ -28,6 +28,10 @@ web-build/
 **/.env
 **/.env.*
 
+# Permitir exemplos de ambiente
+!.env.example
+!**/.env.example
+
 # =========================
 # Expo
 # =========================

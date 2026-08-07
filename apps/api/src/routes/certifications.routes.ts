@@ -16,8 +16,26 @@ const createSchema = z.object({
   validUntil: z.string().datetime().optional(), // ISO
 });
 
+function todayDateOnly() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function dateOnly(value: string) {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function isPastDate(value: string) {
+  return dateOnly(value) < todayDateOnly();
+}
+
 certificationsRoutes.post("/", async (req: AuthRequest, res) => {
   const data = createSchema.parse(req.body);
+
+  if (data.validUntil && isPastDate(data.validUntil)) {
+    return res.status(400).json({
+      message: "A validade da certificação não pode ser anterior à data atual",
+    });
+  }
 
   const product = await prisma.product.findUnique({ where: { id: data.productId } });
   if (!product) return res.status(404).json({ message: "Product not found" });
@@ -59,6 +77,12 @@ const updateSchema = z.object({
 certificationsRoutes.put("/:id", async (req: AuthRequest, res) => {
   const id = z.string().uuid().parse(req.params.id);
   const data = updateSchema.parse(req.body);
+
+  if (data.validUntil && isPastDate(data.validUntil)) {
+    return res.status(400).json({
+      message: "A validade da certificação não pode ser anterior à data atual",
+    });
+  }
 
   const existing = await prisma.certification.findUnique({
     where: { id },
