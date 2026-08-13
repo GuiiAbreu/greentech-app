@@ -17,6 +17,7 @@ export interface User {
   email: string;
   phone?: string;
   city?: string;
+  avatarUrl?: string | null;
   propertyName?: string | null;
   address?: string | null;
   farmerProfile?: FarmerProfile | null;
@@ -29,6 +30,7 @@ export interface Farmer {
   name: string;
   city?: string;
   phone?: string;
+  avatarUrl?: string | null;
   propertyName?: string | null;
   address?: string | null;
   farmerProfile?: FarmerProfile | null;

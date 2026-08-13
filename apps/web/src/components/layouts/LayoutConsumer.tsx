@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, User as UserIcon, Package, LogOut, BookOpen } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -50,7 +51,14 @@ export function LayoutConsumer({ children }: { children: ReactNode }) {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm">
-                  <UserIcon className="h-4 w-4" />
+                  <Avatar className="h-5 w-5">
+                    {user?.avatarUrl && (
+                      <AvatarImage src={user.avatarUrl} alt={user.name} className="object-cover" />
+                    )}
+                    <AvatarFallback className="bg-transparent">
+                      <UserIcon className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="hidden md:inline">{user?.name?.split(" ")[0]}</span>
                 </Button>
               </DropdownMenuTrigger>

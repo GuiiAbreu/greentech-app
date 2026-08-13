@@ -6,6 +6,7 @@ import { ProductForm } from "@/components/ProductForm";
 import { LoadingState } from "@/components/LoadingState";
 import { api } from "@/services/api";
 import { normalizeProduct } from "@/lib/normalizers";
+import { uploadProductImage } from "@/lib/uploads";
 import type { Certification, Product } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -80,9 +81,16 @@ function EditProductContent() {
       <ProductForm
         initial={product}
         initialCert={certification}
-        onSubmit={async (payload, certPayload) => {
+        onSubmit={async (payload, certPayload, image) => {
           try {
             await api.put(`/products/${id}`, payload);
+            let imageFailed = false;
+
+            if (image) {
+              await uploadProductImage(id, image).catch(() => {
+                imageFailed = true;
+              });
+            }
 
             if (certPayload?.title) {
               if (certification?.id) {
@@ -95,7 +103,12 @@ function EditProductContent() {
               }
             }
 
-            toast.success("Produto atualizado");
+            if (imageFailed) {
+              toast.error("Produto atualizado, mas falha ao enviar imagem");
+            } else {
+              toast.success("Produto atualizado");
+            }
+
             navigate({ to: "/agricultor/produtos" });
           } catch {
             toast.error("Falha ao atualizar produto");

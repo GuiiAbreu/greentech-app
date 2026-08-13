@@ -1,8 +1,10 @@
-import { Router } from "express";
+import { NextFunction, Response, Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, AuthRequest } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
+import { uploadProductImage } from "../middlewares/upload.middleware.js";
+import { publicUploadUrl, removeLocalUploadFile } from "../config/uploads.js";
 
 export const productsRoutes = Router();
 
@@ -16,7 +18,7 @@ const createSchema = z.object({
   priceCents: z.number().int().nonnegative(),
   unit: z.enum(["BANDEJA", "KG", "UNIDADE", "MACO"]),
   stockQty: z.number().int().nonnegative(),
-  photoUrls: z.array(z.string().url()).max(6).optional(),
+  photoUrls: z.array(z.string().url()).max(1).optional(),
 });
 
 productsRoutes.post("/", async (req: AuthRequest, res) => {
@@ -59,9 +61,65 @@ const updateSchema = z.object({
   unit: z.enum(["BANDEJA", "KG", "UNIDADE", "MACO"]).optional(),
   stockQty: z.number().int().nonnegative().optional(),
   active: z.boolean().optional(),
-  // substitui TODAS as fotos do produto (simplifica)
-  photoUrls: z.array(z.string().url()).max(6).optional(),
+  // compatibilidade com URLs externas, limitada a uma imagem principal
+  photoUrls: z.array(z.string().url()).max(1).optional(),
 });
+
+type ProductWithPhotos = {
+  id: string;
+  farmerId: string;
+  photos: { url: string }[];
+};
+
+async function ensureProductOwner(req: AuthRequest, res: Response, next: NextFunction) {
+  const id = z.string().uuid().parse(req.params.id);
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: { photos: true },
+  });
+
+  if (!product) return res.status(404).json({ message: "Product not found" });
+  if (product.farmerId !== req.user!.id) return res.status(403).json({ message: "Forbidden" });
+
+  res.locals.product = product;
+  return next();
+}
+
+productsRoutes.post(
+  "/:id/image",
+  ensureProductOwner,
+  uploadProductImage.single("image"),
+  async (_req: AuthRequest, res) => {
+    const product = res.locals.product as ProductWithPhotos;
+    const file = _req.file;
+
+    if (!file) return res.status(400).json({ message: "Image file is required" });
+
+    const imageUrl = publicUploadUrl("products", file.filename);
+
+    let updated;
+    try {
+      updated = await prisma.product.update({
+        where: { id: product.id },
+        data: {
+          photos: {
+            deleteMany: {},
+            create: { url: imageUrl },
+          },
+        },
+        include: { photos: true, certs: true },
+      });
+    } catch (error) {
+      await removeLocalUploadFile(imageUrl);
+      throw error;
+    }
+
+    await Promise.all(product.photos.map((photo) => removeLocalUploadFile(photo.url)));
+
+    return res.json(updated);
+  }
+);
 
 productsRoutes.get("/:id", async (req: AuthRequest, res) => {
   const id = z.string().uuid().parse(req.params.id);
@@ -81,7 +139,7 @@ productsRoutes.put("/:id", async (req: AuthRequest, res) => {
   const id = z.string().uuid().parse(req.params.id);
   const data = updateSchema.parse(req.body);
 
-  const existing = await prisma.product.findUnique({ where: { id } });
+  const existing = await prisma.product.findUnique({ where: { id }, include: { photos: true } });
   if (!existing) return res.status(404).json({ message: "Product not found" });
   if (existing.farmerId !== req.user!.id) return res.status(403).json({ message: "Forbidden" });
 
@@ -104,6 +162,14 @@ productsRoutes.put("/:id", async (req: AuthRequest, res) => {
     },
     include: { photos: true, certs: true },
   });
+
+  if (data.photoUrls) {
+    await Promise.all(
+      existing.photos
+        .filter((photo) => !data.photoUrls?.includes(photo.url))
+        .map((photo) => removeLocalUploadFile(photo.url))
+    );
+  }
 
   return res.json(updated);
 });

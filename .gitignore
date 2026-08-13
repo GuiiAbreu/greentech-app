@@ -19,6 +19,7 @@ yarn-error.log*
 dist/
 build/
 web-build/
+apps/api/uploads/
 
 # =========================
 # Env (NUNCA versionar)
