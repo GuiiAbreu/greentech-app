@@ -6,8 +6,10 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { AvatarUploadField } from "@/components/AvatarUploadField";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/services/api";
+import { uploadAvatarImage } from "@/lib/uploads";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/agricultor/perfil")({ component: Page });
@@ -25,6 +27,7 @@ function Page() {
 function Profile() {
   const { user, refresh, logout } = useAuth();
   const navigate = useNavigate();
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -49,8 +52,22 @@ function Profile() {
     setLoading(true);
     try {
       await api.put("/me", form);
+      let avatarFailed = false;
+
+      if (avatarFile) {
+        await uploadAvatarImage(avatarFile)
+          .then(() => setAvatarFile(null))
+          .catch(() => {
+            avatarFailed = true;
+          });
+      }
+
       await refresh();
-      toast.success("Perfil atualizado");
+      if (avatarFailed) {
+        toast.error("Perfil atualizado, mas falha ao enviar avatar");
+      } else {
+        toast.success("Perfil atualizado");
+      }
     } catch {
       toast.error("Falha ao atualizar");
     } finally {
@@ -63,6 +80,12 @@ function Profile() {
       <h1 className="mb-4 text-2xl font-bold">Meu perfil</h1>
       <Card className="p-6">
         <div className="grid gap-4 sm:grid-cols-2">
+          <AvatarUploadField
+            currentUrl={user?.avatarUrl}
+            name={form.name || user?.name}
+            file={avatarFile}
+            onFileChange={setAvatarFile}
+          />
           <div className="space-y-2 sm:col-span-2">
             <Label>Nome</Label>
             <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />

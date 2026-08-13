@@ -49,6 +49,7 @@ model User {
 
   phone        String
   city         String
+  avatarUrl    String?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

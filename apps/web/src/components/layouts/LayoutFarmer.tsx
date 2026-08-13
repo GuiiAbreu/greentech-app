@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   LayoutDashboard,
   Package,
@@ -24,7 +25,7 @@ const menu = [
 ] as const;
 
 export function LayoutFarmer({ children }: { children: ReactNode }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -33,6 +34,7 @@ export function LayoutFarmer({ children }: { children: ReactNode }) {
     <nav className="space-y-1 p-3">
       {menu.map(({ to, label, icon: Icon }) => {
         const active = location.pathname.startsWith(to);
+        const showAvatar = label === "Perfil" && user?.avatarUrl;
         return (
           <Link
             key={to}
@@ -45,7 +47,16 @@ export function LayoutFarmer({ children }: { children: ReactNode }) {
                 : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
             )}
           >
-            <Icon className="h-4 w-4" />
+            {showAvatar ? (
+              <Avatar className="h-4 w-4">
+                <AvatarImage src={user.avatarUrl!} alt={user.name} className="object-cover" />
+                <AvatarFallback className="bg-transparent">
+                  <UserIcon className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <Icon className="h-4 w-4" />
+            )}
             {label}
           </Link>
         );

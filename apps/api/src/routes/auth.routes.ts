@@ -72,6 +72,7 @@ authRoutes.post("/register", async (req, res) => {
       email: true,
       phone: true,
       city: true,
+      avatarUrl: true,
       farmerProfile: {
         select: {
           propertyName: true,
@@ -117,6 +118,7 @@ authRoutes.post("/login", async (req, res) => {
       email: user.email,
       phone: user.phone,
       city: user.city,
+      avatarUrl: user.avatarUrl,
       farmerProfile: user.farmerProfile
         ? {
             propertyName: user.farmerProfile.propertyName,

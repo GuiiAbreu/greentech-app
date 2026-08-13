@@ -1,8 +1,10 @@
-import { Router } from "express";
+import { NextFunction, Response, Router } from "express";
 import { z } from "zod";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware, AuthRequest } from "../middlewares/auth.middleware.js";
 import { comparePassword, hashPassword } from "../utils/password.js";
+import { uploadAvatar } from "../middlewares/upload.middleware.js";
+import { publicUploadUrl, removeLocalUploadFile } from "../config/uploads.js";
 
 export const meRoutes = Router();
 
@@ -20,6 +22,7 @@ meRoutes.get("/", async (req: AuthRequest, res) => {
       email: true,
       phone: true,
       city: true,
+      avatarUrl: true,
       farmerProfile: {
         select: {
           propertyName: true,
@@ -33,6 +36,68 @@ meRoutes.get("/", async (req: AuthRequest, res) => {
 
   return res.json(user);
 });
+
+type CurrentUserWithAvatar = {
+  avatarUrl: string | null;
+};
+
+async function ensureCurrentUser(req: AuthRequest, res: Response, next: NextFunction) {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user!.id },
+    select: { avatarUrl: true },
+  });
+
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  res.locals.currentUser = user;
+  return next();
+}
+
+meRoutes.post(
+  "/avatar",
+  ensureCurrentUser,
+  uploadAvatar.single("avatar"),
+  async (req: AuthRequest, res) => {
+    const file = req.file;
+    const currentUser = res.locals.currentUser as CurrentUserWithAvatar;
+
+    if (!file) return res.status(400).json({ message: "Avatar file is required" });
+
+    const avatarUrl = publicUploadUrl("avatars", file.filename);
+
+    let updated;
+    try {
+      updated = await prisma.user.update({
+        where: { id: req.user!.id },
+        data: { avatarUrl },
+        select: {
+          id: true,
+          role: true,
+          name: true,
+          email: true,
+          phone: true,
+          city: true,
+          avatarUrl: true,
+          farmerProfile: {
+            select: {
+              propertyName: true,
+              address: true,
+            },
+          },
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch (error) {
+      await removeLocalUploadFile(avatarUrl);
+      throw error;
+    }
+
+    await removeLocalUploadFile(currentUser.avatarUrl);
+
+    return res.json(updated);
+  }
+);
 
 const updateSchema = z.object({
   name: z.string().min(2).optional(),
@@ -82,6 +147,7 @@ meRoutes.put("/", async (req: AuthRequest, res) => {
       email: true,
       phone: true,
       city: true,
+      avatarUrl: true,
       farmerProfile: {
         select: {
           propertyName: true,

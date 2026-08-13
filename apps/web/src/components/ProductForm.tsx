@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,7 +15,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { categoryLabel, unitLabel, reaisToCents } from "@/lib/format";
 import type { Product, Certification, ProductCategory, UnitType } from "@/lib/types";
-import { Plus, X } from "lucide-react";
+import { IMAGE_ACCEPT, getImageValidationMessage } from "@/lib/uploads";
+import { ImageIcon } from "lucide-react";
 
 type Payload = {
   name: string;
@@ -25,7 +26,6 @@ type Payload = {
   unit: UnitType;
   stockQty: number;
   active?: boolean;
-  photoUrls?: string[];
 };
 
 type CertPayload = { title: string; issuer?: string; validUntil?: string };
@@ -41,7 +41,7 @@ export function ProductForm({
 }: {
   initial?: Product;
   initialCert?: Certification | null;
-  onSubmit: (p: Payload, c?: CertPayload) => Promise<void>;
+  onSubmit: (p: Payload, c?: CertPayload, image?: File | null) => Promise<void>;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -52,20 +52,52 @@ export function ProductForm({
   const [unit, setUnit] = useState<UnitType>(initial?.unit ?? "KG");
   const [stockQty, setStockQty] = useState(String(initial?.stockQty ?? 0));
   const [active, setActive] = useState(initial?.active !== false);
-  const [photos, setPhotos] = useState<string[]>(initial?.photoUrls ?? [""]);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initial?.photoUrls?.[0] ?? null);
   const [certTitle, setCertTitle] = useState(initialCert?.title ?? "");
   const [certIssuer, setCertIssuer] = useState(initialCert?.issuer ?? "");
   const [certUntil, setCertUntil] = useState(initialCert?.validUntil?.slice(0, 10) ?? "");
   const [loading, setLoading] = useState(false);
 
+  const currentImageUrl = initial?.photoUrls?.[0] ?? null;
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview(currentImageUrl);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreview(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [imageFile, currentImageUrl]);
+
+  const handleImageChange = (file?: File | null) => {
+    if (!file) {
+      setImageFile(null);
+      return null;
+    }
+
+    const message = getImageValidationMessage(file);
+    if (message) {
+      toast.error(message);
+      setImageFile(null);
+      return message;
+    }
+
+    setImageFile(file);
+    return null;
+  };
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (certTitle.trim() && certUntil && certUntil < todayInputDate()) {
-      toast.error("A validade da certificação não pode ser anterior à data atual");
+      toast.error("A validade da certificacao nao pode ser anterior a data atual");
       return;
     }
+
     setLoading(true);
-    const cleanPhotos = photos.map((p) => p.trim()).filter(Boolean);
     const payload: Payload = {
       name,
       description,
@@ -74,7 +106,6 @@ export function ProductForm({
       unit,
       stockQty: Number(stockQty) || 0,
       active,
-      photoUrls: cleanPhotos.length ? cleanPhotos : undefined,
     };
     const certPayload = certTitle.trim()
       ? {
@@ -83,8 +114,12 @@ export function ProductForm({
           validUntil: certUntil ? new Date(`${certUntil}T00:00:00`).toISOString() : undefined,
         }
       : undefined;
-    await onSubmit(payload, certPayload);
-    setLoading(false);
+
+    try {
+      await onSubmit(payload, certPayload, imageFile);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -95,7 +130,7 @@ export function ProductForm({
           <Input value={name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label>Descrição</Label>
+          <Label>Descricao</Label>
           <Textarea value={description} onChange={(e) => setDescription(e.target.value)} />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -130,7 +165,7 @@ export function ProductForm({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Preço (R$)</Label>
+            <Label>Preco (R$)</Label>
             <Input
               value={price}
               onChange={(e) => setPrice(e.target.value)}
@@ -154,46 +189,43 @@ export function ProductForm({
           </label>
         )}
         <div className="space-y-2">
-          <Label>URLs das fotos (até 6)</Label>
-          {photos.map((url, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                value={url}
-                onChange={(e) =>
-                  setPhotos((p) => p.map((x, idx) => (idx === i ? e.target.value : x)))
-                }
-                placeholder="https://..."
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => setPhotos((p) => p.filter((_, idx) => idx !== i))}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+          <Label htmlFor="product-image">Imagem principal</Label>
+          <div className="grid gap-3 sm:grid-cols-[160px_1fr]">
+            <div className="grid aspect-square place-items-center overflow-hidden rounded-md border bg-muted">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt={name || "Produto"}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              )}
             </div>
-          ))}
-          {photos.length < 6 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setPhotos((p) => [...p, ""])}
-            >
-              <Plus className="h-3 w-3" /> Adicionar foto
-            </Button>
-          )}
+            <div className="space-y-2">
+              <Input
+                id="product-image"
+                type="file"
+                accept={IMAGE_ACCEPT}
+                onChange={(e) => {
+                  const message = handleImageChange(e.target.files?.[0]);
+                  if (message) e.currentTarget.value = "";
+                }}
+              />
+              <p className="text-xs text-muted-foreground">JPG, PNG ou WEBP ate 2 MB.</p>
+              {imageFile && <p className="text-xs text-muted-foreground">{imageFile.name}</p>}
+            </div>
+          </div>
         </div>
         <div className="rounded-lg border p-4">
-          <h3 className="mb-3 font-semibold">Certificação (opcional)</h3>
+          <h3 className="mb-3 font-semibold">Certificacao (opcional)</h3>
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-2 sm:col-span-2">
-              <Label>Título</Label>
+              <Label>Titulo</Label>
               <Input
                 value={certTitle}
                 onChange={(e) => setCertTitle(e.target.value)}
-                placeholder="Certificação Orgânica"
+                placeholder="Certificacao Organica"
               />
             </div>
             <div className="space-y-2">
@@ -205,7 +237,7 @@ export function ProductForm({
               />
             </div>
             <div className="space-y-2">
-              <Label>Válido até</Label>
+              <Label>Valido ate</Label>
               <Input
                 type="date"
                 value={certUntil}

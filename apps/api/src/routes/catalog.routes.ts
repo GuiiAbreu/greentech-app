@@ -42,6 +42,7 @@ catalogRoutes.get("/products", async (req, res) => {
           name: true,
           city: true,
           phone: true,
+          avatarUrl: true,
           farmerProfile: {
             select: { propertyName: true },
           },
@@ -57,6 +58,7 @@ catalogRoutes.get("/products", async (req, res) => {
       name: p.farmer.name,
       city: p.farmer.city,
       phone: p.farmer.phone,
+      avatarUrl: p.farmer.avatarUrl,
       propertyName: p.farmer.farmerProfile?.propertyName ?? null,
     },
   }));
@@ -79,6 +81,7 @@ catalogRoutes.get("/products/:id", async (req, res) => {
           name: true,
           city: true,
           phone: true,
+          avatarUrl: true,
           farmerProfile: {
             select: { propertyName: true, address: true },
           },
@@ -96,6 +99,7 @@ catalogRoutes.get("/products/:id", async (req, res) => {
       name: product.farmer.name,
       city: product.farmer.city,
       phone: product.farmer.phone,
+      avatarUrl: product.farmer.avatarUrl,
       propertyName: product.farmer.farmerProfile?.propertyName ?? null,
       address: product.farmer.farmerProfile?.address ?? null,
     },
@@ -118,6 +122,7 @@ catalogRoutes.get("/farmers", async (_req, res) => {
       name: true,
       city: true,
       phone: true,
+      avatarUrl: true,
       farmerProfile: {
         select: {
           propertyName: true,
@@ -136,6 +141,7 @@ catalogRoutes.get("/farmers", async (_req, res) => {
     name: f.name,
     city: f.city,
     phone: f.phone,
+    avatarUrl: f.avatarUrl,
     propertyName: f.farmerProfile?.propertyName ?? null,
     address: f.farmerProfile?.address ?? null,
     activeProductsCount: f.products.length,
@@ -160,6 +166,7 @@ catalogRoutes.get("/farmers/:farmerId/products", async (req, res) => {
       name: true,
       city: true,
       phone: true,
+      avatarUrl: true,
       farmerProfile: {
         select: { propertyName: true, address: true },
       },
@@ -180,6 +187,7 @@ catalogRoutes.get("/farmers/:farmerId/products", async (req, res) => {
       name: farmer.name,
       city: farmer.city,
       phone: farmer.phone,
+      avatarUrl: farmer.avatarUrl,
       propertyName: farmer.farmerProfile?.propertyName ?? null,
       address: farmer.farmerProfile?.address ?? null,
     },
